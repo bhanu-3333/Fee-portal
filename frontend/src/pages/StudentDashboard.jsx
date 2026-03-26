@@ -1,0 +1,299 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import api from '../services/api';
+import { 
+  CreditCard, Download, History, LogOut, CheckCircle2, 
+  AlertCircle, Receipt as ReceiptIcon, User as UserIcon
+} from 'lucide-react';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
+
+const StudentDashboard = () => {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+  const receiptRef = useRef();
+
+  useEffect(() => {
+    fetchDashboard();
+  }, []);
+
+  const fetchDashboard = async () => {
+    try {
+      const { data } = await api.get('/student/dashboard');
+      setData(data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('user');
+    navigate('/login');
+    window.location.reload();
+  };
+
+  const loadRazorpay = () => {
+    return new Promise((resolve) => {
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
+
+  const handlePayment = async () => {
+    const res = await loadRazorpay();
+    if (!res) {
+      alert('Razorpay SDK failed to load. Are you online?');
+      return;
+    }
+
+    try {
+      // Create order in backend
+      const { data: order } = await api.post('/payment/create-order', { 
+        amount: data.student.pendingAmount 
+      });
+
+      const options = {
+        key: 'RAZORPAY_KEY_ID_PLACEHOLDER', // In real app, get from env or backend
+        amount: order.amount,
+        currency: order.currency,
+        name: data.student.collegeId.name,
+        description: 'Fee Payment',
+        image: data.student.collegeId.logo,
+        order_id: order.id,
+        handler: async (response) => {
+          try {
+            await api.post('/payment/verify-payment', response);
+            alert('Payment Successful!');
+            fetchDashboard();
+          } catch (err) {
+            alert('Payment Verification Failed');
+          }
+        },
+        prefill: {
+          name: data.student.name,
+          email: data.student.email,
+        },
+        theme: { color: '#6366f1' },
+      };
+
+      const rzp = new window.Razorpay(options);
+      rzp.open();
+    } catch (err) {
+      console.error(err);
+      alert('Error creating order');
+    }
+  };
+
+  const downloadReceipt = async (payment) => {
+    // Hidden receipt template will be rendered and captured
+    const element = document.getElementById(`receipt-${payment._id}`);
+    const canvas = await html2canvas(element, { scale: 2 });
+    const imgData = canvas.toDataURL('image/png');
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const imgProps = pdf.getImageProperties(imgData);
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+    pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+    pdf.save(`Receipt-${payment.razorpay_payment_id}.pdf`);
+  };
+
+  if (loading) return <div style={{ color: 'white', padding: '40px' }}>Loading...</div>;
+  if (!data) return <div style={{ color: 'white', padding: '40px' }}>Error loading data</div>;
+
+  const { student, payments } = data;
+
+  return (
+    <div className="main-content" style={{ maxWidth: '1000px', margin: '0 auto' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '40px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+          {student.collegeId.logo && <img src={student.collegeId.logo} alt="logo" style={{ width: '60px', borderRadius: '12px' }} />}
+          <div>
+            <h1 style={{ fontSize: '1.8rem' }}>{student.collegeId.name}</h1>
+            <p style={{ color: 'var(--text-muted)' }}>Student Dashboard</p>
+          </div>
+        </div>
+        <button className="btn" onClick={handleLogout} style={{ color: 'var(--error)' }}><LogOut size={20} /> Logout</button>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '30px' }}>
+        {/* Profile Card */}
+        <div>
+          <div className="glass card">
+            <div style={{ textAlign: 'center', marginBottom: '20px' }}>
+              <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'var(--glass)', margin: '0 auto 15px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <UserIcon size={40} color="var(--primary)" />
+              </div>
+              <h3>{student.name}</h3>
+              <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>Reg No: {student.regNo}</p>
+            </div>
+            <div style={{ borderTop: '1px solid var(--glass-border)', paddingTop: '15px' }}>
+              <p style={{ marginBottom: '8px' }}><strong>Dept:</strong> {student.department}</p>
+              <p style={{ marginBottom: '8px' }}><strong>Year:</strong> {student.year}</p>
+              <p><strong>Type:</strong> {student.type}</p>
+            </div>
+          </div>
+
+          <div className="glass card" style={{ background: student.pendingAmount === 0 ? '#22c55e11' : '#6366f111' }}>
+            {student.pendingAmount === 0 ? (
+              <div style={{ textAlign: 'center' }}>
+                <CheckCircle2 size={40} color="var(--success)" style={{ marginBottom: '10px' }} />
+                <h3 style={{ color: 'var(--success)' }}>Fees Fully Paid</h3>
+                <p style={{ fontSize: '0.9rem', color: 'var(--text-muted)', marginTop: '5px' }}>Total: ₹{student.fees.total}</p>
+              </div>
+            ) : (
+              <div>
+                <h3 style={{ marginBottom: '15px' }}>Payment Summary</h3>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+                  <span>Total Due:</span>
+                  <span>₹{student.fees.total}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', color: 'var(--success)' }}>
+                  <span>Paid:</span>
+                  <span>₹{student.paidAmount}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 800, fontSize: '1.2rem', marginTop: '10px' }}>
+                  <span>Balance:</span>
+                  <span>₹{student.pendingAmount}</span>
+                </div>
+                <button className="btn btn-primary" onClick={handlePayment} style={{ width: '100%', marginTop: '20px', justifyContent: 'center' }}>
+                  <CreditCard size={20} /> Pay Now
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Fee Details & History */}
+        <div>
+          <div className="glass card">
+            <h3 style={{ marginBottom: '20px' }}>Fee Breakdown</h3>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '15px' }}>
+              {Object.entries(student.fees).map(([key, value]) => key !== 'total' && (
+                <div key={key} className="glass" style={{ padding: '15px', borderRadius: '12px' }}>
+                  <p style={{ color: 'var(--text-muted)', textTransform: 'capitalize', fontSize: '0.8rem' }}>{key}</p>
+                  <p style={{ fontSize: '1.1rem', fontWeight: 600 }}>₹{value}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="glass card">
+            <h3 style={{ marginBottom: '20px' }}>Payment History</h3>
+            {payments.length === 0 ? (
+              <p style={{ color: 'var(--text-muted)', textAlign: 'center', padding: '20px' }}>No transactions found</p>
+            ) : (
+              payments.map(p => (
+                <div key={p._id} style={{ 
+                  display: 'flex', justifyContent: 'space-between', alignItems: 'center', 
+                  padding: '15px', borderBottom: '1px solid var(--glass-border)'
+                }}>
+                  <div>
+                    <p style={{ fontWeight: 600 }}>₹{p.amount}</p>
+                    <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{new Date(p.date).toLocaleDateString()}</p>
+                    <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>ID: {p.razorpay_payment_id}</p>
+                  </div>
+                  <button onClick={() => downloadReceipt(p)} className="btn" style={{ background: 'var(--glass)', padding: '8px' }}>
+                    <Download size={18} /> Receipt
+                  </button>
+
+                  {/* Professional Receipt Template */}
+                  <div id={`receipt-${p._id}`} style={{ 
+                    position: 'fixed', left: '-10000px', width: '800px', 
+                    background: 'white', color: '#1a1a1a', padding: '50px',
+                    fontFamily: '"Inter", sans-serif', border: '1px solid #eee'
+                  }}>
+                    <div style={{ display: 'flex', borderBottom: '2px solid #334155', paddingBottom: '30px', marginBottom: '30px' }}>
+                      <div style={{ width: '100px', height: '100px', marginRight: '25px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        {student.collegeId.logo ? (
+                          <img src={student.collegeId.logo} alt="clg-logo" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+                        ) : (
+                          <div style={{ padding: '10px', background: '#f1f5f9', borderRadius: '8px' }}>LOGO</div>
+                        )}
+                      </div>
+                      <div style={{ flex: 1 }}>
+                        <h1 style={{ color: '#1e293b', fontSize: '28px', margin: '0 0 5px 0', fontWeight: 800 }}>{student.collegeId.name}</h1>
+                        <p style={{ color: '#64748b', fontSize: '16px', margin: 0 }}>{student.collegeId.address || 'College Campus, Education Hub'}</p>
+                      </div>
+                    </div>
+
+                    <div style={{ textAlign: 'center', marginBottom: '40px' }}>
+                      <h2 style={{ fontSize: '22px', letterSpacing: '2px', color: '#334155', borderBottom: '1px solid #e2e8f0', display: 'inline-block', paddingBottom: '5px' }}>PAYMENT RECEIPT</h2>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '50px', marginBottom: '40px' }}>
+                      <div>
+                        <div style={{ marginBottom: '15px' }}>
+                          <span style={{ color: '#64748b', fontSize: '14px', display: 'block' }}>Student Name:</span>
+                          <span style={{ fontSize: '16px', fontWeight: 600 }}>{student.name}</span>
+                        </div>
+                        <div style={{ marginBottom: '15px' }}>
+                          <span style={{ color: '#64748b', fontSize: '14px', display: 'block' }}>Register No:</span>
+                          <span style={{ fontSize: '16px', fontWeight: 600 }}>{student.regNo}</span>
+                        </div>
+                        <div>
+                          <span style={{ color: '#64748b', fontSize: '14px', display: 'block' }}>Course:</span>
+                          <span style={{ fontSize: '16px', fontWeight: 600 }}>{student.department} - {student.year}</span>
+                        </div>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ marginBottom: '15px' }}>
+                          <span style={{ color: '#64748b', fontSize: '14px', display: 'block' }}>Payment ID:</span>
+                          <span style={{ fontSize: '16px', fontWeight: 600 }}>{p.razorpay_payment_id}</span>
+                        </div>
+                        <div style={{ marginBottom: '15px' }}>
+                          <span style={{ color: '#64748b', fontSize: '14px', display: 'block' }}>Payment Date:</span>
+                          <span style={{ fontSize: '16px', fontWeight: 600 }}>{new Date(p.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                        </div>
+                        <div>
+                          <span style={{ color: '#64748b', fontSize: '14px', display: 'block' }}>Payment Status:</span>
+                          <span style={{ color: '#10b981', fontWeight: 800, fontSize: '18px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '5px' }}>
+                            SUCCESS <div style={{ background: '#10b981', color: 'white', borderRadius: '50%', width: '18px', height: '18px', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✓</div>
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div style={{ borderTop: '2px solid #f1f5f9', borderBottom: '2px solid #f1f5f9', padding: '20px 0', marginBottom: '50px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0' }}>
+                        <span style={{ color: '#475569', fontWeight: 500 }}>Fee Type: <span style={{ color: '#6366f1', fontStyle: 'italic' }}>Tuition / Academic Fees</span></span>
+                        <span style={{ fontSize: '20px', fontWeight: 800 }}>₹{p.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                      <div style={{ textAlign: 'center' }}>
+                        <div style={{ width: '100px', height: '100px', background: '#f8fafc', border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '10px' }}>
+                          <div style={{ color: '#cbd5e1', fontSize: '12px' }}>QR CODE</div>
+                        </div>
+                        <p style={{ fontSize: '10px', color: '#94a3b8' }}>Transaction ID: {p.razorpay_order_id}</p>
+                      </div>
+                      <div style={{ textAlign: 'center' }}>
+                        <div style={{ borderBottom: '1px solid #334155', width: '150px', marginBottom: '10px' }}>
+                          <img src="https://upload.wikimedia.org/wikipedia/commons/3/3a/Jon_Kirsch_Signature.png" alt="signature" style={{ height: '40px', opacity: 0.8 }} />
+                        </div>
+                        <p style={{ fontWeight: 600, color: '#334155', margin: 0 }}>Accounts Office</p>
+                        <p style={{ fontSize: '12px', color: '#64748b', margin: 0 }}>Authorized Signatory</p>
+                      </div>
+                    </div>
+
+                    <div style={{ marginTop: '60px', textAlign: 'center', color: '#6366f1', fontWeight: 600, fontSize: '18px', fontStyle: 'italic' }}>
+                      Thank you for your payment!
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default StudentDashboard;
