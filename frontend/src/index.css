@@ -1,15 +1,15 @@
 :root {
-  --primary: #6366f1;
-  --secondary: #a855f7;
-  --accent: #ec4899;
-  --background: #0f172a;
-  --surface: #1e293b;
-  --text: #f8fafc;
-  --text-muted: #94a3b8;
-  --success: #22c55e;
+  --primary: #ffffff;
+  --secondary: #e2e8f0;
+  --accent: #94a3b8;
+  --background: #000000;
+  --surface: #111111;
+  --text: #ffffff;
+  --text-muted: #a1a1aa;
+  --success: #ffffff;
   --error: #ef4444;
-  --glass: rgba(255, 255, 255, 0.05);
-  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass: rgba(255, 255, 255, 0.08); /* slightly more visible on pure black */
+  --glass-border: rgba(255, 255, 255, 0.15);
 }
 
 * {
@@ -55,12 +55,12 @@ body {
 
 .btn-primary {
   background: linear-gradient(135deg, var(--primary), var(--secondary));
-  color: white;
+  color: #000000;
 }
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+  box-shadow: 0 4px 15px rgba(255, 255, 255, 0.3);
 }
 
 /* Inputs */
