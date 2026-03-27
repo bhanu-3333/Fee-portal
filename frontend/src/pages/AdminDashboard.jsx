@@ -231,8 +231,8 @@ const StudentList = () => {
                 <td>
                   <span style={{ 
                     padding: '4px 8px', borderRadius: '4px', fontSize: '0.8rem',
-                    background: s.pendingAmount === 0 ? '#22c55e22' : '#ef444422',
-                    color: s.pendingAmount === 0 ? 'var(--success)' : 'var(--error)'
+                    background: s.pendingAmount === 0 ? '#ffffff22' : '#ffffff05',
+                    color: s.pendingAmount === 0 ? 'var(--text)' : 'var(--text-muted)'
                   }}>
                     {s.pendingAmount === 0 ? 'Paid' : 'Pending'}
                   </span>
