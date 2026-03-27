@@ -79,7 +79,7 @@ const StudentDashboard = () => {
           name: data.student.name,
           email: data.student.email,
         },
-        theme: { color: '#6366f1' },
+        theme: { color: '#111111' },
       };
 
       const rzp = new window.Razorpay(options);
@@ -139,7 +139,7 @@ const StudentDashboard = () => {
             </div>
           </div>
 
-          <div className="glass card" style={{ background: student.pendingAmount === 0 ? '#22c55e11' : '#6366f111' }}>
+          <div className="glass card" style={{ background: student.pendingAmount === 0 ? '#ffffff11' : '#ffffff05' }}>
             {student.pendingAmount === 0 ? (
               <div style={{ textAlign: 'center' }}>
                 <CheckCircle2 size={40} color="var(--success)" style={{ marginBottom: '10px' }} />
@@ -261,7 +261,7 @@ const StudentDashboard = () => {
 
                     <div style={{ borderTop: '2px solid #f1f5f9', borderBottom: '2px solid #f1f5f9', padding: '20px 0', marginBottom: '50px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0' }}>
-                        <span style={{ color: '#475569', fontWeight: 500 }}>Fee Type: <span style={{ color: '#6366f1', fontStyle: 'italic' }}>Tuition / Academic Fees</span></span>
+                        <span style={{ color: '#475569', fontWeight: 500 }}>Fee Type: <span style={{ color: '#111111', fontStyle: 'italic' }}>Tuition / Academic Fees</span></span>
                         <span style={{ fontSize: '20px', fontWeight: 800 }}>₹{p.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
                       </div>
                     </div>
@@ -282,7 +282,7 @@ const StudentDashboard = () => {
                       </div>
                     </div>
 
-                    <div style={{ marginTop: '60px', textAlign: 'center', color: '#6366f1', fontWeight: 600, fontSize: '18px', fontStyle: 'italic' }}>
+                    <div style={{ marginTop: '60px', textAlign: 'center', color: '#111111', fontWeight: 600, fontSize: '18px', fontStyle: 'italic' }}>
                       Thank you for your payment!
                     </div>
                   </div>
