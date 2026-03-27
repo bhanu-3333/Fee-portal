@@ -40,7 +40,7 @@ const Login = () => {
       alignItems: 'center', 
       justifyContent: 'center', 
       minHeight: '100vh',
-      background: 'radial-gradient(circle at top right, #6366f122, transparent), radial-gradient(circle at bottom left, #a855f722, transparent)'
+      background: 'radial-gradient(circle at top right, #ffffff11, transparent), radial-gradient(circle at bottom left, #ffffff05, transparent)'
     }}>
       <div className="glass card" style={{ width: '400px', padding: '40px' }}>
         <h2 style={{ textAlign: 'center', marginBottom: '30px', fontSize: '2rem', fontWeight: 800 }}>
