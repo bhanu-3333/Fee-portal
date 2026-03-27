@@ -25,7 +25,7 @@ const AdminSignup = () => {
   return (
     <div className="signup-page" style={{ 
       display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh',
-      background: 'radial-gradient(circle at top left, #6366f122, transparent), radial-gradient(circle at bottom right, #a855f722, transparent)'
+      background: 'radial-gradient(circle at top left, #ffffff11, transparent), radial-gradient(circle at bottom right, #ffffff05, transparent)'
     }}>
       <div className="glass card" style={{ width: '600px', padding: '40px' }}>
         <h2 style={{ textAlign: 'center', marginBottom: '30px', fontSize: '2rem', fontWeight: 800 }}>
