@@ -7,7 +7,7 @@
   --text: #ffffff;
   --text-muted: #a1a1aa;
   --success: #ffffff;
-  --error: #ef4444;
+  --error: #ffffff;
   --glass: rgba(255, 255, 255, 0.08); /* slightly more visible on pure black */
   --glass-border: rgba(255, 255, 255, 0.15);
 }
