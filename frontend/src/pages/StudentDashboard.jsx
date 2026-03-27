@@ -252,8 +252,8 @@ const StudentDashboard = () => {
                         </div>
                         <div>
                           <span style={{ color: '#64748b', fontSize: '14px', display: 'block' }}>Payment Status:</span>
-                          <span style={{ color: '#10b981', fontWeight: 800, fontSize: '18px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '5px' }}>
-                            SUCCESS <div style={{ background: '#10b981', color: 'white', borderRadius: '50%', width: '18px', height: '18px', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✓</div>
+                          <span style={{ color: '#000000', fontWeight: 800, fontSize: '18px', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '5px' }}>
+                            SUCCESS <div style={{ background: '#000000', color: 'white', borderRadius: '50%', width: '18px', height: '18px', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✓</div>
                           </span>
                         </div>
                       </div>
