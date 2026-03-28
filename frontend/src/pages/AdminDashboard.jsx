@@ -4,7 +4,7 @@ import api from '../services/api';
 import { 
   LayoutDashboard, Users, Building, Calculator, 
   LogOut, Plus, Search, Filter, Edit3, Trash2, CheckCircle, Clock,
-  Folder, FolderOpen, ChevronRight, ArrowLeft, MoreVertical, Activity, AlertCircle
+  Folder, FolderOpen, ChevronRight, ArrowLeft, MoreVertical, Activity, AlertCircle, MessageSquare
 } from 'lucide-react';
 
 const AdminDashboard = () => {
@@ -38,6 +38,7 @@ const AdminDashboard = () => {
     { name: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
     { name: 'Activity', path: '/admin/activity', icon: Activity },
     { name: 'Departments', path: '/admin/departments', icon: Building },
+    { name: 'Messages', path: '/admin/messages', icon: MessageSquare },
   ];
 
   return (
@@ -76,6 +77,7 @@ const AdminDashboard = () => {
           <Route path="dashboard" element={<Overview stats={stats} />} />
           <Route path="activity" element={<RecentPayments />} />
           <Route path="departments" element={<DepartmentManagement />} />
+          <Route path="messages" element={<AdminMessages />} />
         </Routes>
       </div>
     </div>
@@ -410,6 +412,8 @@ const YearStudentList = ({ department, year, onBack }) => {
   const [students, setStudents] = useState([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingStudent, setEditingStudent] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterType, setFilterType] = useState('All');
   const [formData, setFormData] = useState({
     regNo: '', name: '', type: 'Counselling',
     fees: { tuition: 0, exam: 0, transport: 0, hostel: 0, breakage: 0 }
@@ -472,6 +476,32 @@ const YearStudentList = ({ department, year, onBack }) => {
         <button className="btn btn-primary" onClick={() => setShowAddForm(true)}>
           <Plus size={20} /> Add Student
         </button>
+      </div>
+
+      <div style={{ display: 'flex', gap: '15px', marginBottom: '20px' }}>
+        <div className="input-group" style={{ flex: 1, margin: 0, position: 'relative' }}>
+          <Search size={18} style={{ position: 'absolute', left: '10px', top: '12px', color: 'var(--text-muted)' }} />
+          <input 
+            type="text" 
+            placeholder="Search by name or reg no..." 
+            value={searchTerm} 
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{ paddingLeft: '35px', margin: 0 }}
+          />
+        </div>
+        <div className="input-group" style={{ width: '200px', margin: 0, position: 'relative' }}>
+          <Filter size={18} style={{ position: 'absolute', left: '10px', top: '12px', color: 'var(--text-muted)' }} />
+          <select 
+            value={filterType} 
+            onChange={(e) => setFilterType(e.target.value)}
+            style={{ paddingLeft: '35px', margin: 0 }}
+          >
+            <option value="All">All Types</option>
+            <option value="Counselling">Counselling</option>
+            <option value="Management">Management</option>
+            <option value="Scholarship">Scholarship</option>
+          </select>
+        </div>
       </div>
 
       {showAddForm && (
@@ -545,7 +575,12 @@ const YearStudentList = ({ department, year, onBack }) => {
             </tr>
           </thead>
           <tbody>
-            {students.map(s => (
+            {students.filter(s => {
+              const matchesSearch = s.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                                    s.regNo.toLowerCase().includes(searchTerm.toLowerCase());
+              const matchesType = filterType === 'All' || s.type === filterType;
+              return matchesSearch && matchesType;
+            }).map(s => (
               <tr key={s._id} style={{ borderBottom: '1px solid var(--glass-border)' }}>
                 <td style={{ padding: '16px' }}>{s.regNo}</td>
                 <td>{s.name}</td>
@@ -572,6 +607,74 @@ const YearStudentList = ({ department, year, onBack }) => {
             )}
           </tbody>
         </table>
+      </div>
+    </div>
+  );
+};
+
+const AdminMessages = () => {
+  const [messages, setMessages] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchMessages();
+  }, []);
+
+  const fetchMessages = async () => {
+    try {
+      const { data } = await api.get('/admin/messages');
+      setMessages(data);
+    } catch (err) { console.error(err); } finally { setLoading(false); }
+  };
+
+  const markAsRead = async (id) => {
+    try {
+      await api.patch(`/admin/messages/${id}/read`);
+      fetchMessages();
+    } catch (err) { console.error(err); }
+  };
+
+  const deleteMessage = async (id) => {
+    if (!window.confirm("Delete this message forever?")) return;
+    try {
+      await api.delete(`/admin/messages/${id}`);
+      fetchMessages();
+    } catch (err) { console.error(err); }
+  };
+
+  return (
+    <div>
+      <h1 style={{ marginBottom: '30px' }}>Student Messages</h1>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+        {messages.map(m => (
+          <div key={m._id} className="glass card" style={{ 
+            borderLeft: m.status === 'unread' ? '4px solid var(--primary)' : '1px solid var(--glass-border)',
+            background: m.status === 'unread' ? '#ffffff11' : 'var(--glass)'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+              <div>
+                <h3 style={{ margin: 0 }}>{m.subject}</h3>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', margin: '5px 0 0 0' }}>
+                  From: <strong>{m.studentId?.name}</strong> ({m.studentId?.regNo}) • {m.studentId?.department} {m.studentId?.year} 
+                </p>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{new Date(m.createdAt).toLocaleString()}</span>
+                <div style={{ marginTop: '10px', display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+                  {m.status === 'unread' && (
+                    <button onClick={() => markAsRead(m._id)} className="btn btn-primary" style={{ padding: '6px 12px', fontSize: '0.8rem' }}><CheckCircle size={14} style={{ marginRight: '5px' }}/> Mark as Read</button>
+                  )}
+                  <button onClick={() => deleteMessage(m._id)} className="btn" style={{ padding: '6px', background: 'transparent', color: 'var(--error)', border: 'none' }}><Trash2 size={18} /></button>
+                </div>
+              </div>
+            </div>
+            <p style={{ margin: 0, background: '#00000033', borderRadius: '8px', padding: '15px', lineHeight: '1.5' }}>
+              {m.message}
+            </p>
+          </div>
+        ))}
+        {messages.length === 0 && !loading && <p style={{ color: 'var(--text-muted)' }}>No messages found.</p>}
+        {loading && <p style={{ color: 'var(--text-muted)' }}>Loading...</p>}
       </div>
     </div>
   );
