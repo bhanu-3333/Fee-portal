@@ -163,8 +163,16 @@ const getDashboardStats = async (req, res) => {
         const totalStudents = await Student.countDocuments({ collegeId: req.user.collegeId });
         const paidStudents = await Student.countDocuments({ collegeId: req.user.collegeId, pendingAmount: 0 });
         const pendingStudents = await Student.countDocuments({ collegeId: req.user.collegeId, pendingAmount: { $gt: 0 } });
+        const totalDepartments = await Department.countDocuments({ collegeId: req.user.collegeId });
 
-        res.json({ totalStudents, paidStudents, pendingStudents });
+        res.json({ 
+            totalStudents, 
+            paidStudents, 
+            pendingStudents,
+            totalDepartments,
+            dueFinished: paidStudents,
+            dueNotFinished: pendingStudents
+        });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
