@@ -11,7 +11,11 @@ const razorpay = new Razorpay({
 // @desc    Create Razorpay order
 // @route   POST /api/payment/create-order
 const createOrder = async (req, res) => {
-    const { amount } = req.body;
+    const { amount, category } = req.body;
+
+    if (!category || !['tuition', 'exam', 'transport', 'hostel', 'breakage'].includes(category)) {
+        return res.status(400).json({ message: 'Valid payment category is required' });
+    }
 
     try {
         const options = {
@@ -28,6 +32,7 @@ const createOrder = async (req, res) => {
             collegeId: req.user.collegeId,
             razorpay_order_id: order.id,
             amount,
+            category,
             status: 'pending'
         });
 
@@ -61,8 +66,14 @@ const verifyPayment = async (req, res) => {
 
             // Update student record
             const student = await Student.findById(payment.studentId);
+            
+            if (student.fees[payment.category]) {
+                student.fees[payment.category].paid += payment.amount;
+            }
+
             student.paidAmount += payment.amount;
             student.pendingAmount = student.fees.total - student.paidAmount;
+            
             await student.save();
 
             res.json({ success: true, message: 'Payment verified and updated' });
