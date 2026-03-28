@@ -5,9 +5,13 @@ const {
     getYears, addYear, updateYear, deleteYear,
     addStudent, getStudents, updateStudentFees, deleteStudent,
     getDashboardStats, getRecentPayments,
-    getMessages, markMessageRead, deleteMessage
+    getMessages, markMessageRead, deleteMessage,
+    uploadStudents
 } = require('../controllers/adminController');
 const { protect, adminOnly } = require('../middleware/auth');
+const multer = require('multer');
+
+const upload = multer({ storage: multer.memoryStorage() });
 
 router.use(protect);
 router.use(adminOnly);
@@ -26,6 +30,7 @@ router.put('/years/:id', updateYear);
 router.delete('/years/:id', deleteYear);
 
 router.post('/students', addStudent);
+router.post('/students/upload', upload.single('file'), uploadStudents);
 router.get('/students', getStudents);
 router.put('/students/:id', updateStudentFees);
 router.delete('/students/:id', deleteStudent);
