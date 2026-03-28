@@ -59,7 +59,7 @@ const StudentDashboard = () => {
       });
 
       const options = {
-        key: 'RAZORPAY_KEY_ID_PLACEHOLDER', // In real app, get from env or backend
+        key: order.key_id, // Dynamically sourced from backend
         amount: order.amount,
         currency: order.currency,
         name: data.student.collegeId.name,
