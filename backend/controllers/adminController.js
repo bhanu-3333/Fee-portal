@@ -3,6 +3,7 @@ const College = require('../models/College');
 const Department = require('../models/Department');
 const Year = require('../models/Year');
 const Payment = require('../models/Payment');
+const Message = require('../models/Message');
 const bcrypt = require('bcryptjs');
 
 // @desc    Get departments
@@ -219,9 +220,40 @@ const getRecentPayments = async (req, res) => {
     }
 };
 
+// @desc    Get all messages
+const getMessages = async (req, res) => {
+    try {
+        const messages = await Message.find({ collegeId: req.user.collegeId })
+            .sort({ createdAt: -1 })
+            .populate('studentId', 'name regNo department year');
+        res.json(messages);
+    } catch (error) { res.status(500).json({ message: error.message }); }
+};
+
+// @desc    Mark message as read
+const markMessageRead = async (req, res) => {
+    try {
+        const message = await Message.findOneAndUpdate(
+            { _id: req.params.id, collegeId: req.user.collegeId },
+            { status: 'read' },
+            { new: true }
+        );
+        res.json(message);
+    } catch (error) { res.status(500).json({ message: error.message }); }
+};
+
+// @desc    Delete message
+const deleteMessage = async (req, res) => {
+    try {
+        await Message.findOneAndDelete({ _id: req.params.id, collegeId: req.user.collegeId });
+        res.json({ message: 'Message deleted' });
+    } catch (error) { res.status(500).json({ message: error.message }); }
+};
+
 module.exports = { 
     getDepartments, addDepartment, updateDepartment, deleteDepartment, 
     getYears, addYear, updateYear, deleteYear, 
     addStudent, getStudents, updateStudentFees, deleteStudent, 
-    getDashboardStats, getRecentPayments 
+    getDashboardStats, getRecentPayments,
+    getMessages, markMessageRead, deleteMessage
 };
