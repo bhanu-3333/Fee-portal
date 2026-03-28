@@ -5,6 +5,7 @@ const Year = require('../models/Year');
 const Payment = require('../models/Payment');
 const Message = require('../models/Message');
 const bcrypt = require('bcryptjs');
+const xlsx = require('xlsx');
 
 // @desc    Get departments
 // @route   GET /api/admin/departments
@@ -165,6 +166,7 @@ const getDashboardStats = async (req, res) => {
         const paidStudents = await Student.countDocuments({ collegeId: req.user.collegeId, pendingAmount: 0 });
         const pendingStudents = await Student.countDocuments({ collegeId: req.user.collegeId, pendingAmount: { $gt: 0 } });
         const totalDepartments = await Department.countDocuments({ collegeId: req.user.collegeId });
+        const college = await College.findById(req.user.collegeId);
 
         res.json({ 
             totalStudents, 
@@ -172,7 +174,8 @@ const getDashboardStats = async (req, res) => {
             pendingStudents,
             totalDepartments,
             dueFinished: paidStudents,
-            dueNotFinished: pendingStudents
+            dueNotFinished: pendingStudents,
+            college: college ? { name: college.name, logo: college.logo } : null
         });
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -250,10 +253,85 @@ const deleteMessage = async (req, res) => {
     } catch (error) { res.status(500).json({ message: error.message }); }
 };
 
+// @desc    Upload students in bulk
+// @route   POST /api/admin/students/upload
+const uploadStudents = async (req, res) => {
+    try {
+        if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
+        
+        const { departmentId, yearId } = req.body;
+        const dept = await Department.findById(departmentId);
+        const yearObj = await Year.findById(yearId);
+        if (!dept || !yearObj || String(dept.collegeId) !== String(req.user.collegeId)) {
+            return res.status(400).json({ message: 'Invalid department or year parameters' });
+        }
+
+        const workbook = xlsx.read(req.file.buffer, { type: 'buffer' });
+        const sheetName = workbook.SheetNames[0];
+        const data = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName]);
+
+        let successCount = 0;
+        let skippedCount = 0;
+        const errors = [];
+
+        for (let i = 0; i < data.length; i++) {
+            const row = data[i];
+            const name = row['Name'];
+            const regNo = String(row['RegNo'] || '');
+            const type = row['Type'] || 'Counselling';
+            const tuition = Number(row['Tuition']) || 0;
+            const exam = Number(row['Exam']) || 0;
+            const transport = Number(row['Transport']) || 0;
+            const hostel = Number(row['Hostel']) || 0;
+            const breakage = Number(row['Breakage']) || 0;
+
+            if (!name || !regNo) {
+                skippedCount++;
+                errors.push(`Row ${i + 2}: Missing required fields (Name or RegNo)`);
+                continue;
+            }
+
+            const exists = await Student.findOne({ regNo, collegeId: req.user.collegeId });
+            if (exists) {
+                skippedCount++;
+                errors.push(`Row ${i + 2}: RegNo already exists (${regNo})`);
+                continue;
+            }
+
+            const totalFees = tuition + exam + transport + hostel + breakage;
+
+            try {
+                await Student.create({
+                    regNo,
+                    name,
+                    department: dept.name,
+                    year: yearObj.name,
+                    departmentId,
+                    yearId,
+                    type,
+                    collegeId: req.user.collegeId,
+                    fees: { tuition, exam, transport, hostel, breakage, total: totalFees },
+                    pendingAmount: totalFees,
+                    paidAmount: 0
+                });
+                successCount++;
+            } catch (err) {
+                skippedCount++;
+                errors.push(`Row ${i + 2}: Error saving student - ${err.message}`);
+            }
+        }
+
+        res.json({ successCount, skippedCount, errors });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 module.exports = { 
     getDepartments, addDepartment, updateDepartment, deleteDepartment, 
     getYears, addYear, updateYear, deleteYear, 
     addStudent, getStudents, updateStudentFees, deleteStudent, 
     getDashboardStats, getRecentPayments,
-    getMessages, markMessageRead, deleteMessage
+    getMessages, markMessageRead, deleteMessage,
+    uploadStudents
 };
