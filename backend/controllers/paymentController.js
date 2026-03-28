@@ -31,7 +31,10 @@ const createOrder = async (req, res) => {
             status: 'pending'
         });
 
-        res.json(order);
+        res.json({
+            ...order,
+            key_id: process.env.RAZORPAY_KEY_ID
+        });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
