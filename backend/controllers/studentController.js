@@ -1,5 +1,6 @@
 const Student = require('../models/Student');
 const Payment = require('../models/Payment');
+const Message = require('../models/Message');
 
 // @desc    Get student profile and fee info
 // @route   GET /api/student/dashboard
@@ -14,4 +15,21 @@ const getStudentDashboard = async (req, res) => {
     }
 };
 
-module.exports = { getStudentDashboard };
+// @desc    Send a message/report to admin
+// @route   POST /api/student/messages
+const sendMessage = async (req, res) => {
+    const { subject, message } = req.body;
+    try {
+        const newMessage = await Message.create({
+            studentId: req.user._id,
+            collegeId: req.user.collegeId,
+            subject,
+            message
+        });
+        res.status(201).json(newMessage);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+module.exports = { getStudentDashboard, sendMessage };
