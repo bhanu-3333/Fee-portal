@@ -4,8 +4,10 @@ import api from '../services/api';
 import { 
   LayoutDashboard, Users, Building, Calculator, 
   LogOut, Plus, Search, Filter, Edit3, Trash2, CheckCircle, Clock,
-  Folder, FolderOpen, ChevronRight, ArrowLeft, MoreVertical, Activity, AlertCircle, MessageSquare
+  Folder, FolderOpen, ChevronRight, ArrowLeft, MoreVertical, Activity, AlertCircle, MessageSquare, Download, Upload
 } from 'lucide-react';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -76,7 +78,7 @@ const AdminDashboard = () => {
         <Routes>
           <Route path="dashboard" element={<Overview stats={stats} />} />
           <Route path="activity" element={<RecentPayments />} />
-          <Route path="departments" element={<DepartmentManagement />} />
+          <Route path="departments" element={<DepartmentManagement college={stats.college} />} />
           <Route path="messages" element={<AdminMessages />} />
         </Routes>
       </div>
@@ -115,15 +117,17 @@ const Overview = ({ stats }) => (
           <Clock color="var(--error)" size={40} />
         </div>
       </div>
-      <div className="glass card">
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <div>
-            <p style={{ color: 'var(--text-muted)' }}>Total Departments</p>
-            <h2 style={{ fontSize: '2.5rem', color: 'var(--text)' }}>{stats.totalDepartments}</h2>
+      <Link to="/admin/departments" style={{ textDecoration: 'none', color: 'inherit' }}>
+        <div className="glass card" style={{ cursor: 'pointer', transition: 'all 0.2s' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <div>
+              <p style={{ color: 'var(--text-muted)' }}>Total Departments</p>
+              <h2 style={{ fontSize: '2.5rem', color: 'var(--text)' }}>{stats.totalDepartments}</h2>
+            </div>
+            <Folder color="var(--text-muted)" size={40} />
           </div>
-          <Folder color="var(--text-muted)" size={40} />
         </div>
-      </div>
+      </Link>
       <div className="glass card">
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
           <div>
@@ -210,7 +214,7 @@ const RecentPayments = () => {
   );
 };
 
-const DepartmentManagement = () => {
+const DepartmentManagement = ({ college }) => {
   const [departments, setDepartments] = useState([]);
   const [activeDepartment, setActiveDepartment] = useState(null);
   const [years, setYears] = useState([]);
@@ -318,6 +322,7 @@ const DepartmentManagement = () => {
       <YearStudentList 
         department={activeDepartment} 
         year={activeYear} 
+        college={college}
         onBack={() => setActiveYear(null)} 
       />
     );
@@ -408,9 +413,13 @@ const DepartmentManagement = () => {
   );
 };
 
-const YearStudentList = ({ department, year, onBack }) => {
+const YearStudentList = ({ department, year, college, onBack }) => {
   const [students, setStudents] = useState([]);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [uploadFile, setUploadFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadResult, setUploadResult] = useState(null);
   const [editingStudent, setEditingStudent] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('All');
@@ -465,6 +474,56 @@ const YearStudentList = ({ department, year, onBack }) => {
     } catch (err) { alert(err.response?.data?.message || 'Error updating fees'); }
   };
 
+  const downloadPDF = async () => {
+    const element = document.getElementById('student-pdf-content');
+    element.style.display = 'block';
+    const canvas = await html2canvas(element, { scale: 2 });
+    const imgData = canvas.toDataURL('image/png');
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const imgProps = pdf.getImageProperties(imgData);
+    const pdfWidth = pdf.internal.pageSize.getWidth();
+    const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+    pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+    pdf.save(`Students-${department.name}-${year.name}.pdf`);
+    element.style.display = 'none';
+  };
+
+  const downloadTemplate = () => {
+    const headers = ['Name', 'RegNo', 'Type', 'Tuition', 'Exam', 'Transport', 'Hostel', 'Breakage'];
+    const csvContent = "data:text/csv;charset=utf-8," + headers.join(",") + "\n" + "John Doe,21CSE001,Counselling,50000,1500,0,0,0";
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "student_upload_template.csv");
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  };
+
+  const handleFileUpload = async (e) => {
+    e.preventDefault();
+    if (!uploadFile) return;
+    setUploading(true);
+    setUploadResult(null);
+
+    const formData = new FormData();
+    formData.append('file', uploadFile);
+    formData.append('departmentId', department._id);
+    formData.append('yearId', year._id);
+
+    try {
+      const { data } = await api.post('/admin/students/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      setUploadResult(data);
+      fetchStudents();
+    } catch (err) {
+      alert(err.response?.data?.message || 'Error uploading file');
+    } finally {
+      setUploading(false);
+    }
+  };
+
   return (
     <div>
       <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '30px' }}>
@@ -473,6 +532,12 @@ const YearStudentList = ({ department, year, onBack }) => {
         </button>
         <h1 style={{ flex: 1 }}>{department.name} <span style={{ color: 'var(--text-muted)', fontSize: '1.2rem', fontWeight: 400 }}>/ {year.name} / Students</span></h1>
         
+        <button className="btn" onClick={downloadPDF} style={{ background: 'var(--glass)', border: '1px solid var(--glass-border)' }}>
+          <Download size={20} /> Download PDF
+        </button>
+        <button className="btn" onClick={() => setShowUploadModal(true)} style={{ background: 'var(--primary)', color: 'white', border: '1px solid var(--glass-border)' }}>
+          <Upload size={20} /> Upload Students
+        </button>
         <button className="btn btn-primary" onClick={() => setShowAddForm(true)}>
           <Plus size={20} /> Add Student
         </button>
@@ -503,6 +568,49 @@ const YearStudentList = ({ department, year, onBack }) => {
           </select>
         </div>
       </div>
+
+      {showUploadModal && (
+        <div className="glass card" style={{ position: 'relative', marginBottom: '40px' }}>
+          <button onClick={() => { setShowUploadModal(false); setUploadResult(null); setUploadFile(null); }} style={{ position: 'absolute', right: '20px', top: '20px', background: 'transparent', border: 'none', color: 'white', cursor: 'pointer' }}>Close</button>
+          <h3>Bulk Upload Students</h3>
+          
+          <div style={{ display: 'flex', gap: '15px', marginTop: '15px', marginBottom: '20px' }}>
+            <button type="button" onClick={downloadTemplate} className="btn" style={{ fontSize: '0.9rem', padding: '6px 12px' }}>
+              <Download size={16} style={{ marginRight: '5px' }} /> Download Excel/CSV Template
+            </button>
+          </div>
+
+          <form onSubmit={handleFileUpload}>
+            <div className="input-group" style={{ marginBottom: '20px' }}>
+              <label>Select CSV or Excel file</label>
+              <input type="file" required accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" onChange={(e) => setUploadFile(e.target.files[0])} />
+            </div>
+            
+            <button type="submit" className="btn btn-primary" disabled={uploading}>
+              {uploading ? 'Processing file...' : 'Upload Data Data'}
+            </button>
+          </form>
+
+          {uploadResult && (
+            <div style={{ marginTop: '20px', padding: '15px', background: '#ffffff11', borderRadius: '8px' }}>
+              <h4 style={{ margin: '0 0 10px 0' }}>Upload Summary</h4>
+              <p style={{ margin: '5px 0', color: 'var(--success)' }}>✅ Successfully Added: {uploadResult.successCount} students</p>
+              <p style={{ margin: '5px 0', color: 'var(--error)' }}>⚠️ Skipped / Failed: {uploadResult.skippedCount} rows</p>
+              
+              {uploadResult.errors && uploadResult.errors.length > 0 && (
+                <div style={{ marginTop: '15px', maxHeight: '150px', overflowY: 'auto', background: 'rgba(0,0,0,0.5)', padding: '10px', borderRadius: '5px' }}>
+                  <p style={{ fontSize: '0.85em', color: 'var(--text-muted)', margin: '0 0 5px 0' }}>Error Details:</p>
+                  <ul style={{ margin: 0, paddingLeft: '20px', fontSize: '0.85em', color: 'var(--error)' }}>
+                    {uploadResult.errors.map((err, idx) => (
+                      <li key={idx}>{err}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       {showAddForm && (
         <div className="glass card" style={{ position: 'relative', marginBottom: '40px' }}>
@@ -605,6 +713,44 @@ const YearStudentList = ({ department, year, onBack }) => {
             {students.length === 0 && (
               <tr><td colSpan="6" style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>No students found in this active year.</td></tr>
             )}
+          </tbody>
+        </table>
+      </div>
+
+      <div id="student-pdf-content" style={{ display: 'none', padding: '40px', background: 'white', color: 'black', width: '800px', fontFamily: '"Inter", sans-serif' }}>
+        <div style={{ display: 'flex', alignItems: 'center', borderBottom: '2px solid black', paddingBottom: '20px', marginBottom: '20px' }}>
+          {college?.logo && <img src={college.logo} alt="logo" style={{ width: '80px', height: '80px', objectFit: 'contain', marginRight: '20px' }} />}
+          <div>
+            <h1 style={{ margin: 0, fontSize: '24px' }}>{college?.name || 'College Register'}</h1>
+            <p style={{ margin: '5px 0 0 0', fontSize: '16px', color: '#666' }}>Student Fee Registry Page</p>
+          </div>
+        </div>
+        <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'space-between', fontSize: '14px' }}>
+          <p style={{ margin: 0 }}><strong>Department:</strong> {department.name}</p>
+          <p style={{ margin: 0 }}><strong>Year:</strong> {year.name}</p>
+        </div>
+        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '14px' }}>
+          <thead>
+            <tr style={{ borderBottom: '2px solid black' }}>
+              <th style={{ padding: '8px' }}>Name</th>
+              <th style={{ padding: '8px' }}>RegNo</th>
+              <th style={{ padding: '8px' }}>Type</th>
+              <th style={{ padding: '8px' }}>Total Fee</th>
+              <th style={{ padding: '8px' }}>Paid</th>
+              <th style={{ padding: '8px' }}>Pending</th>
+            </tr>
+          </thead>
+          <tbody>
+            {students.map(s => (
+              <tr key={s._id} style={{ borderBottom: '1px solid #ccc' }}>
+                <td style={{ padding: '8px', fontWeight: 600 }}>{s.name}</td>
+                <td style={{ padding: '8px' }}>{s.regNo}</td>
+                <td style={{ padding: '8px' }}>{s.type}</td>
+                <td style={{ padding: '8px' }}>₹{s.fees.total}</td>
+                <td style={{ padding: '8px', color: 'green' }}>₹{s.paidAmount}</td>
+                <td style={{ padding: '8px', color: 'red' }}>₹{s.pendingAmount}</td>
+              </tr>
+            ))}
           </tbody>
         </table>
       </div>
