@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { 
   CreditCard, Download, History, LogOut, CheckCircle2, 
-  AlertCircle, Receipt as ReceiptIcon, User as UserIcon
+  AlertCircle, Receipt as ReceiptIcon, User as UserIcon, MessageSquare
 } from 'lucide-react';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -13,6 +13,8 @@ const StudentDashboard = () => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const receiptRef = useRef();
+  const [showMsgModal, setShowMsgModal] = useState(false);
+  const [msgData, setMsgData] = useState({ subject: '', message: '' });
 
   useEffect(() => {
     fetchDashboard();
@@ -33,6 +35,19 @@ const StudentDashboard = () => {
     localStorage.removeItem('user');
     navigate('/login');
     window.location.reload();
+  };
+
+  const submitMessage = async (e) => {
+    e.preventDefault();
+    if (!msgData.message) return;
+    try {
+      await api.post('/student/messages', msgData);
+      alert('Message sent successfully to administration.');
+      setShowMsgModal(false);
+      setMsgData({ subject: '', message: '' });
+    } catch (err) {
+      alert('Error sending message');
+    }
   };
 
   const loadRazorpay = () => {
@@ -118,8 +133,33 @@ const StudentDashboard = () => {
             <p style={{ color: 'var(--text-muted)' }}>Student Dashboard</p>
           </div>
         </div>
-        <button className="btn" onClick={handleLogout} style={{ color: 'var(--error)' }}><LogOut size={20} /> Logout</button>
+        <div style={{ display: 'flex', gap: '15px' }}>
+          <button className="btn btn-primary" onClick={() => setShowMsgModal(true)} style={{ background: '#ffffff22', color: 'white', border: '1px solid #ffffff44' }}>
+            <MessageSquare size={20} /> Report Issue
+          </button>
+          <button className="btn" onClick={handleLogout} style={{ color: 'var(--error)' }}><LogOut size={20} /> Logout</button>
+        </div>
       </div>
+
+      {showMsgModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div className="glass card" style={{ width: '500px', position: 'relative' }}>
+            <button onClick={() => setShowMsgModal(false)} style={{ position: 'absolute', right: '20px', top: '20px', background: 'transparent', border: 'none', color: 'white', cursor: 'pointer' }}>Close</button>
+            <h3 style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '10px' }}><MessageSquare size={24} color="var(--primary)" /> Reach out to Admin</h3>
+            <form onSubmit={submitMessage}>
+              <div className="input-group">
+                <label>Subject</label>
+                <input type="text" value={msgData.subject} onChange={e => setMsgData({...msgData, subject: e.target.value})} placeholder="e.g., Fee Correction Request" />
+              </div>
+              <div className="input-group">
+                <label>Message Details *</label>
+                <textarea required rows="5" value={msgData.message} onChange={e => setMsgData({...msgData, message: e.target.value})} placeholder="Describe your issue..." style={{ padding: '12px', background: 'var(--glass)', border: '1px solid var(--glass-border)', borderRadius: '8px', color: 'var(--text)', width: '100%', resize: 'vertical' }}></textarea>
+              </div>
+              <button type="submit" className="btn btn-primary" style={{ marginTop: '10px', width: '100%', justifyContent: 'center' }}>Send Message</button>
+            </form>
+          </div>
+        </div>
+      )}
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '30px' }}>
         {/* Profile Card */}
