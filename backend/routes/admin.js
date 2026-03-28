@@ -4,7 +4,8 @@ const {
     getDepartments, addDepartment, updateDepartment, deleteDepartment,
     getYears, addYear, updateYear, deleteYear,
     addStudent, getStudents, updateStudentFees, deleteStudent,
-    getDashboardStats, getRecentPayments
+    getDashboardStats, getRecentPayments,
+    getMessages, markMessageRead, deleteMessage
 } = require('../controllers/adminController');
 const { protect, adminOnly } = require('../middleware/auth');
 
@@ -28,5 +29,9 @@ router.post('/students', addStudent);
 router.get('/students', getStudents);
 router.put('/students/:id', updateStudentFees);
 router.delete('/students/:id', deleteStudent);
+
+router.get('/messages', getMessages);
+router.patch('/messages/:id/read', markMessageRead);
+router.delete('/messages/:id', deleteMessage);
 
 module.exports = router;
