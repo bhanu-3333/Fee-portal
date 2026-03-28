@@ -2,6 +2,7 @@ const Student = require('../models/Student');
 const College = require('../models/College');
 const Department = require('../models/Department');
 const Year = require('../models/Year');
+const Payment = require('../models/Payment');
 const bcrypt = require('bcryptjs');
 
 // @desc    Get departments
@@ -27,6 +28,30 @@ const addDepartment = async (req, res) => {
     }
 };
 
+// @desc    Update department
+const updateDepartment = async (req, res) => {
+    try {
+        const dept = await Department.findOneAndUpdate(
+            { _id: req.params.id, collegeId: req.user.collegeId },
+            { name: req.body.name },
+            { new: true }
+        );
+        res.json(dept);
+    } catch (error) { res.status(500).json({ message: error.message }); }
+};
+
+// @desc    Delete department
+const deleteDepartment = async (req, res) => {
+    try {
+        const dept = await Department.findOneAndDelete({ _id: req.params.id, collegeId: req.user.collegeId });
+        if (dept) {
+            await Year.deleteMany({ departmentId: dept._id });
+            await Student.deleteMany({ departmentId: dept._id });
+        }
+        res.json({ message: 'Department removed' });
+    } catch (error) { res.status(500).json({ message: error.message }); }
+};
+
 // @desc    Get years by department
 // @route   GET /api/admin/departments/:deptId/years
 const getYears = async (req, res) => {
@@ -48,6 +73,29 @@ const addYear = async (req, res) => {
     } catch (error) {
         res.status(400).json({ message: error.message });
     }
+};
+
+// @desc    Update year
+const updateYear = async (req, res) => {
+    try {
+        const year = await Year.findOneAndUpdate(
+            { _id: req.params.id, collegeId: req.user.collegeId },
+            { name: req.body.name },
+            { new: true }
+        );
+        res.json(year);
+    } catch (error) { res.status(500).json({ message: error.message }); }
+};
+
+// @desc    Delete year
+const deleteYear = async (req, res) => {
+    try {
+        const year = await Year.findOneAndDelete({ _id: req.params.id, collegeId: req.user.collegeId });
+        if (year) {
+            await Student.deleteMany({ yearId: year._id });
+        }
+        res.json({ message: 'Year removed' });
+    } catch (error) { res.status(500).json({ message: error.message }); }
 };
 
 // @desc    Add student
@@ -141,4 +189,31 @@ const updateStudentFees = async (req, res) => {
     }
 };
 
-module.exports = { getDepartments, addDepartment, getYears, addYear, addStudent, getStudents, getDashboardStats, updateStudentFees };
+// @desc    Delete student
+const deleteStudent = async (req, res) => {
+    try {
+        await Student.findOneAndDelete({ _id: req.params.id, collegeId: req.user.collegeId });
+        await Payment.deleteMany({ studentId: req.params.id }); 
+        res.json({ message: 'Student removed' });
+    } catch (error) { res.status(500).json({ message: error.message }); }
+};
+
+// @desc    Get recent payments
+const getRecentPayments = async (req, res) => {
+    try {
+        const payments = await Payment.find({ collegeId: req.user.collegeId })
+            .sort({ date: -1 })
+            .limit(15)
+            .populate('studentId', 'name pendingAmount');
+        res.json(payments);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+module.exports = { 
+    getDepartments, addDepartment, updateDepartment, deleteDepartment, 
+    getYears, addYear, updateYear, deleteYear, 
+    addStudent, getStudents, updateStudentFees, deleteStudent, 
+    getDashboardStats, getRecentPayments 
+};
