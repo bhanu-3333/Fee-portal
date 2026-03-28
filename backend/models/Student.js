@@ -7,6 +7,8 @@ const studentSchema = new mongoose.Schema({
     email: { type: String }, // optional but good to have
     password: { type: String },
     isPasswordSet: { type: Boolean, default: false },
+    departmentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Department' },
+    yearId: { type: mongoose.Schema.Types.ObjectId, ref: 'Year' },
     department: { type: String, required: true },
     year: { type: String, required: true },
     type: { type: String, enum: ['Counselling', 'Management', 'Scholarship'], required: true },
