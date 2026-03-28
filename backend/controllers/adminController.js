@@ -121,6 +121,15 @@ const addStudent = async (req, res) => {
 
         const totalFees = Object.values(fees).reduce((a, b) => a + (Number(b) || 0), 0);
 
+        const formattedFees = {
+            tuition: { total: Number(fees.tuition) || 0, paid: 0 },
+            exam: { total: Number(fees.exam) || 0, paid: 0 },
+            transport: { total: Number(fees.transport) || 0, paid: 0 },
+            hostel: { total: Number(fees.hostel) || 0, paid: 0 },
+            breakage: { total: Number(fees.breakage) || 0, paid: 0 },
+            total: totalFees
+        };
+
         const student = await Student.create({
             regNo,
             name,
@@ -130,7 +139,7 @@ const addStudent = async (req, res) => {
             yearId,
             type,
             collegeId: req.user.collegeId,
-            fees: { ...fees, total: totalFees },
+            fees: formattedFees,
             pendingAmount: totalFees
         });
 
@@ -191,7 +200,14 @@ const updateStudentFees = async (req, res) => {
         if (!student) return res.status(404).json({ message: 'Student not found' });
 
         const totalFees = Object.values(fees).reduce((a, b) => a + (Number(b) || 0), 0);
-        student.fees = { ...fees, total: totalFees };
+        
+        student.fees.tuition.total = Number(fees.tuition) || 0;
+        student.fees.exam.total = Number(fees.exam) || 0;
+        student.fees.transport.total = Number(fees.transport) || 0;
+        student.fees.hostel.total = Number(fees.hostel) || 0;
+        student.fees.breakage.total = Number(fees.breakage) || 0;
+        student.fees.total = totalFees;
+
         student.pendingAmount = totalFees - student.paidAmount;
 
         await student.save();
@@ -213,7 +229,7 @@ const deleteStudent = async (req, res) => {
 // @desc    Get recent payments
 const getRecentPayments = async (req, res) => {
     try {
-        const payments = await Payment.find({ collegeId: req.user.collegeId })
+        const payments = await Payment.find({ collegeId: req.user.collegeId, status: 'completed' })
             .sort({ date: -1 })
             .limit(15)
             .populate('studentId', 'name pendingAmount');
@@ -310,7 +326,14 @@ const uploadStudents = async (req, res) => {
                     yearId,
                     type,
                     collegeId: req.user.collegeId,
-                    fees: { tuition, exam, transport, hostel, breakage, total: totalFees },
+                    fees: {
+                        tuition: { total: tuition, paid: 0 },
+                        exam: { total: exam, paid: 0 },
+                        transport: { total: transport, paid: 0 },
+                        hostel: { total: hostel, paid: 0 },
+                        breakage: { total: breakage, paid: 0 },
+                        total: totalFees
+                    },
                     pendingAmount: totalFees,
                     paidAmount: 0
                 });
