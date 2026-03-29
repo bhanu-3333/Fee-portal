@@ -15,6 +15,8 @@ const StudentDashboard = () => {
   const receiptRef = useRef();
   const [showMsgModal, setShowMsgModal] = useState(false);
   const [msgData, setMsgData] = useState({ subject: '', message: '' });
+  const [payCategory, setPayCategory] = useState('tuition');
+  const [payAmount, setPayAmount] = useState('');
 
   useEffect(() => {
     fetchDashboard();
@@ -61,6 +63,18 @@ const StudentDashboard = () => {
   };
 
   const handlePayment = async () => {
+    if (!payAmount || Number(payAmount) <= 0) return alert('Enter a valid amount');
+    
+    // Determine category limits flexibly for old and new data structures
+    const rawCatFee = data.student.fees[payCategory];
+    const catTotal = typeof rawCatFee === 'object' ? rawCatFee.total : (Number(rawCatFee) || 0);
+    const catPaid = typeof rawCatFee === 'object' ? rawCatFee.paid : 0;
+    const maxAllowed = catTotal - catPaid;
+
+    if (Number(payAmount) > maxAllowed) {
+      return alert(`Maximum allowed payment for ${payCategory} is ₹${maxAllowed}`);
+    }
+
     const res = await loadRazorpay();
     if (!res) {
       alert('Razorpay SDK failed to load. Are you online?');
@@ -70,7 +84,8 @@ const StudentDashboard = () => {
     try {
       // Create order in backend
       const { data: order } = await api.post('/payment/create-order', { 
-        amount: data.student.pendingAmount 
+        amount: Number(payAmount),
+        category: payCategory
       });
 
       const options = {
@@ -83,7 +98,11 @@ const StudentDashboard = () => {
         order_id: order.id,
         handler: async (response) => {
           try {
-            await api.post('/payment/verify-payment', response);
+            await api.post('/payment/verify-payment', {
+                ...response,
+                amount: Number(payAmount),
+                category: payCategory
+            });
             alert('Payment Successful!');
             fetchDashboard();
           } catch (err) {
@@ -188,20 +207,32 @@ const StudentDashboard = () => {
               </div>
             ) : (
               <div>
-                <h3 style={{ marginBottom: '15px' }}>Payment Summary</h3>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
-                  <span>Total Due:</span>
-                  <span>₹{student.fees.total}</span>
+                <h3 style={{ marginBottom: '15px' }}>Make a Payment</h3>
+                
+                <div className="input-group" style={{ marginBottom: '15px' }}>
+                  <label>Select Fee Category</label>
+                  <select value={payCategory} onChange={e => { setPayCategory(e.target.value); setPayAmount(''); }}>
+                    {['tuition', 'exam', 'transport', 'hostel', 'breakage'].map(cat => {
+                       const catFee = student.fees[cat];
+                       const total = typeof catFee === 'object' ? catFee.total : (Number(catFee) || 0);
+                       const paid = typeof catFee === 'object' ? catFee.paid : 0;
+                       const max = total - paid;
+                       return <option key={cat} value={cat} disabled={max <= 0}>{cat.charAt(0).toUpperCase() + cat.slice(1)} (Pending: ₹{max})</option>
+                    })}
+                  </select>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px', color: 'var(--success)' }}>
-                  <span>Paid:</span>
-                  <span>₹{student.paidAmount}</span>
+
+                <div className="input-group" style={{ marginBottom: '15px' }}>
+                  <label>Amount to Pay</label>
+                  <input type="number" placeholder="Enter Amount" value={payAmount} onChange={e => setPayAmount(e.target.value)} />
                 </div>
+
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 800, fontSize: '1.2rem', marginTop: '10px' }}>
-                  <span>Balance:</span>
+                  <span>Total Due Overall:</span>
                   <span>₹{student.pendingAmount}</span>
                 </div>
-                <button className="btn btn-primary" onClick={handlePayment} style={{ width: '100%', marginTop: '20px', justifyContent: 'center' }}>
+                
+                <button className="btn btn-primary" onClick={handlePayment} disabled={!payAmount} style={{ width: '100%', marginTop: '20px', justifyContent: 'center' }}>
                   <CreditCard size={20} /> Pay Now
                 </button>
               </div>
@@ -214,12 +245,21 @@ const StudentDashboard = () => {
           <div className="glass card">
             <h3 style={{ marginBottom: '20px' }}>Fee Breakdown</h3>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '15px' }}>
-              {Object.entries(student.fees).map(([key, value]) => key !== 'total' && (
-                <div key={key} className="glass" style={{ padding: '15px', borderRadius: '12px' }}>
-                  <p style={{ color: 'var(--text-muted)', textTransform: 'capitalize', fontSize: '0.8rem' }}>{key}</p>
-                  <p style={{ fontSize: '1.1rem', fontWeight: 600 }}>₹{value}</p>
-                </div>
-              ))}
+              {['tuition', 'exam', 'transport', 'hostel', 'breakage'].map((key) => {
+                const catFee = student.fees[key];
+                const total = typeof catFee === 'object' ? catFee.total : (Number(catFee) || 0);
+                const paid = typeof catFee === 'object' ? catFee.paid : 0;
+
+                return (
+                  <div key={key} className="glass" style={{ padding: '15px', borderRadius: '12px' }}>
+                    <p style={{ color: 'var(--text-muted)', textTransform: 'capitalize', fontSize: '0.8rem', margin: 0 }}>{key}</p>
+                    <p style={{ fontSize: '1.1rem', fontWeight: 600, margin: '5px 0' }}>₹{total}</p>
+                    <p style={{ fontSize: '0.8rem', color: paid >= total && total > 0 ? 'var(--success)' : 'var(--error)', margin: 0 }}>
+                      Paid: ₹{paid}
+                    </p>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
@@ -301,7 +341,7 @@ const StudentDashboard = () => {
 
                     <div style={{ borderTop: '2px solid #f1f5f9', borderBottom: '2px solid #f1f5f9', padding: '20px 0', marginBottom: '50px' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0' }}>
-                        <span style={{ color: '#475569', fontWeight: 500 }}>Fee Type: <span style={{ color: '#111111', fontStyle: 'italic' }}>Tuition / Academic Fees</span></span>
+                        <span style={{ color: '#475569', fontWeight: 500 }}>Fee Type: <span style={{ color: '#111111', fontStyle: 'italic', textTransform: 'capitalize' }}>{p.category || 'Tuition / Academic Fees'}</span></span>
                         <span style={{ fontSize: '20px', fontWeight: 800 }}>₹{p.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
                       </div>
                     </div>
