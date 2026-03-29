@@ -229,7 +229,7 @@ const deleteStudent = async (req, res) => {
 // @desc    Get recent payments
 const getRecentPayments = async (req, res) => {
     try {
-        const payments = await Payment.find({ collegeId: req.user.collegeId, status: 'completed' })
+        const payments = await Payment.find({ collegeId: req.user.collegeId, status: 'success' })
             .sort({ date: -1 })
             .limit(15)
             .populate('studentId', 'name pendingAmount');
