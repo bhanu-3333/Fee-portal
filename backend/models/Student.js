@@ -13,11 +13,11 @@ const studentSchema = new mongoose.Schema({
     year: { type: String, required: true },
     type: { type: String, enum: ['Counselling', 'Management', 'Scholarship'], required: true },
     fees: {
-        tuition: { type: Number, default: 0 },
-        exam: { type: Number, default: 0 },
-        transport: { type: Number, default: 0 },
-        hostel: { type: Number, default: 0 },
-        breakage: { type: Number, default: 0 },
+        tuition: { total: { type: Number, default: 0 }, paid: { type: Number, default: 0 } },
+        exam: { total: { type: Number, default: 0 }, paid: { type: Number, default: 0 } },
+        transport: { total: { type: Number, default: 0 }, paid: { type: Number, default: 0 } },
+        hostel: { total: { type: Number, default: 0 }, paid: { type: Number, default: 0 } },
+        breakage: { total: { type: Number, default: 0 }, paid: { type: Number, default: 0 } },
         total: { type: Number, default: 0 }
     },
     paidAmount: { type: Number, default: 0 },
