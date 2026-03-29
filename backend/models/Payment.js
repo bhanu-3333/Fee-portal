@@ -8,7 +8,7 @@ const paymentSchema = new mongoose.Schema({
     razorpay_signature: { type: String },
     amount: { type: Number, required: true },
     category: { type: String, required: true },
-    status: { type: String, enum: ['pending', 'completed', 'failed'], default: 'pending' },
+    status: { type: String, default: 'success' },
     date: { type: Date, default: Date.now }
 }, { timestamps: true });
 
