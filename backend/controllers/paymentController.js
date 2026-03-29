@@ -26,16 +26,6 @@ const createOrder = async (req, res) => {
 
         const order = await razorpay.orders.create(options);
 
-        // Store pending payment in DB
-        await Payment.create({
-            studentId: req.user._id,
-            collegeId: req.user.collegeId,
-            razorpay_order_id: order.id,
-            amount,
-            category,
-            status: 'pending'
-        });
-
         res.json({
             ...order,
             key_id: process.env.RAZORPAY_KEY_ID
@@ -48,7 +38,7 @@ const createOrder = async (req, res) => {
 // @desc    Verify Razorpay payment
 // @route   POST /api/payment/verify-payment
 const verifyPayment = async (req, res) => {
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, amount, category } = req.body;
 
     const shasum = crypto.createHmac('sha256', process.env.RAZORPAY_KEY_SECRET);
     shasum.update(`${razorpay_order_id}|${razorpay_payment_id}`);
@@ -56,13 +46,16 @@ const verifyPayment = async (req, res) => {
 
     if (digest === razorpay_signature) {
         try {
-            const payment = await Payment.findOne({ razorpay_order_id });
-            if (!payment) return res.status(404).json({ message: 'Order not found' });
-
-            payment.razorpay_payment_id = razorpay_payment_id;
-            payment.razorpay_signature = razorpay_signature;
-            payment.status = 'completed';
-            await payment.save();
+            const payment = await Payment.create({
+                studentId: req.user._id,
+                collegeId: req.user.collegeId,
+                razorpay_order_id,
+                razorpay_payment_id,
+                razorpay_signature,
+                amount,
+                category,
+                status: 'success'
+            });
 
             // Update student record
             const student = await Student.findById(payment.studentId);
