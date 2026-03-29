@@ -180,6 +180,7 @@ const RecentPayments = () => {
           <thead style={{ background: 'var(--glass)', color: 'var(--text-muted)' }}>
             <tr>
               <th style={{ padding: '16px' }}>Student Name</th>
+              <th>Category</th>
               <th>Date & Time</th>
               <th>Amount Paid</th>
               <th>Status</th>
@@ -190,13 +191,14 @@ const RecentPayments = () => {
             {payments.map(p => (
               <tr key={p._id} style={{ borderBottom: '1px solid var(--glass-border)' }}>
                 <td style={{ padding: '16px', fontWeight: 'bold' }}>{p.studentId?.name || 'Unknown'}</td>
+                <td><span style={{ textTransform: 'capitalize' }}>{p.category || 'general'}</span></td>
                 <td>{new Date(p.date).toLocaleString()}</td>
                 <td><span style={{ color: 'var(--success)', fontWeight: 'bold' }}>₹{p.amount.toLocaleString('en-IN')}</span></td>
                 <td>
                   <span style={{ 
                     padding: '4px 8px', borderRadius: '4px', fontSize: '0.8rem',
-                    background: p.status === 'completed' || p.status === 'pending' ? '#ffffff22' : '#ffffff05',
-                    color: p.status === 'completed' || p.status === 'pending' ? 'var(--text)' : 'var(--text-muted)'
+                    background: '#ffffff22',
+                    color: 'var(--text)'
                   }}>
                     {p.status}
                   </span>
@@ -205,7 +207,7 @@ const RecentPayments = () => {
               </tr>
             ))}
             {payments.length === 0 && (
-              <tr><td colSpan="5" style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>No recent payments.</td></tr>
+              <tr><td colSpan="6" style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>No recent payments.</td></tr>
             )}
           </tbody>
         </table>
@@ -660,7 +662,7 @@ const YearStudentList = ({ department, year, college, onBack }) => {
               {['tuition', 'exam', 'transport', 'hostel', 'breakage'].map(fee => (
                 <div key={fee} className="input-group">
                   <label style={{ textTransform: 'capitalize' }}>{fee}</label>
-                  <input type="number" required value={editingStudent.fees[fee] || 0} onChange={(e) => setEditingStudent({...editingStudent, fees: { ...editingStudent.fees, [fee]: e.target.value }})} />
+                  <input type="number" required value={typeof editingStudent.fees[fee] === 'object' ? editingStudent.fees[fee].total : editingStudent.fees[fee] || 0} onChange={(e) => setEditingStudent({...editingStudent, fees: { ...editingStudent.fees, [fee]: e.target.value }})} />
                 </div>
               ))}
             </div>
@@ -693,16 +695,13 @@ const YearStudentList = ({ department, year, college, onBack }) => {
                 <td style={{ padding: '16px' }}>{s.regNo}</td>
                 <td>{s.name}</td>
                 <td>₹{s.fees.total}</td>
-                <td>₹{s.paidAmount}</td>
-                <td>₹{s.pendingAmount}</td>
+                <td style={{ color: 'var(--success)' }}>₹{s.paidAmount}</td>
+                <td style={{ color: 'var(--error)' }}>₹{s.pendingAmount}</td>
                 <td>
-                  <span style={{ 
-                    padding: '4px 8px', borderRadius: '4px', fontSize: '0.8rem',
-                    background: s.pendingAmount === 0 ? '#ffffff22' : '#ffffff05',
-                    color: s.pendingAmount === 0 ? 'var(--text)' : 'var(--text-muted)'
-                  }}>
-                    {s.pendingAmount === 0 ? 'Paid' : 'Pending'}
-                  </span>
+                  {s.pendingAmount === 0 ? 
+                    <span style={{ background: '#22c55e22', color: '#22c55e', padding: '4px 8px', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 'bold' }}>Paid</span> : 
+                    <span style={{ background: '#eab30822', color: '#eab308', padding: '4px 8px', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 'bold' }}>Pending</span>
+                  }
                 </td>
                 <td style={{ display: 'flex', gap: '10px' }}>
                   <button onClick={() => setEditingStudent({...s})} className="btn" style={{ padding: '6px', background: 'transparent', color: 'var(--primary)', border: 'none' }} title="Edit Fees"><Edit3 size={18} /></button>
@@ -711,7 +710,7 @@ const YearStudentList = ({ department, year, college, onBack }) => {
               </tr>
             ))}
             {students.length === 0 && (
-              <tr><td colSpan="6" style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>No students found in this active year.</td></tr>
+              <tr><td colSpan="7" style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>No students found in this active year.</td></tr>
             )}
           </tbody>
         </table>
