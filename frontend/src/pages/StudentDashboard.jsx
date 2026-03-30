@@ -217,7 +217,7 @@ const StudentDashboard = () => {
                        const total = typeof catFee === 'object' ? catFee.total : (Number(catFee) || 0);
                        const paid = typeof catFee === 'object' ? catFee.paid : 0;
                        const max = total - paid;
-                       return <option key={cat} value={cat} disabled={max <= 0}>{cat.charAt(0).toUpperCase() + cat.slice(1)} (Pending: ₹{max})</option>
+                       return <option key={cat} value={cat}>{cat.charAt(0).toUpperCase() + cat.slice(1)} (Pending: ₹{max})</option>
                     })}
                   </select>
                 </div>
