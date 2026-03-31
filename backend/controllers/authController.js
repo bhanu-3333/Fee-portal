@@ -7,7 +7,15 @@ const Student = require('../models/Student');
 // @desc    Register a new college and admin
 // @route   POST /api/auth/admin/signup
 const adminSignup = async (req, res) => {
-    const { collegeName, collegeId, email, password, adminName, logo, address } = req.body;
+    const { collegeName, collegeId, email, password, adminName, address } = req.body;
+    
+    // Support both file upload and URL fallback
+    let logo = '';
+    if (req.file) {
+        logo = `uploads/logos/${req.file.filename}`;
+    } else if (req.body.logo) {
+        logo = req.body.logo;
+    }
 
     try {
         const collegeExists = await College.findOne({ collegeId });
