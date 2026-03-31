@@ -11,11 +11,16 @@ connectDB();
 
 const app = express();
 
+const path = require('path');
+
 // Body parser
 app.use(express.json());
 
 // Enable CORS
 app.use(cors());
+
+// Serve uploaded files
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Route files
 const authRoutes = require('./routes/auth.js');
