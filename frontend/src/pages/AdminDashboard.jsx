@@ -4,7 +4,7 @@ import api from '../services/api';
 import { 
   LayoutDashboard, Users, Building, Calculator, 
   LogOut, Plus, Search, Filter, Edit3, Trash2, CheckCircle, Clock,
-  Folder, FolderOpen, ChevronRight, ArrowLeft, MoreVertical, Activity, AlertCircle, MessageSquare, Download, Upload
+  Folder, FolderOpen, ChevronRight, ArrowLeft, MoreVertical, Activity, AlertCircle, MessageSquare, Download, Upload, Bell, User
 } from 'lucide-react';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -44,10 +44,11 @@ const AdminDashboard = () => {
   ];
 
   return (
-    <div className="dashboard">
-      <div className="sidebar glass">
-        <div style={{ padding: '0 0 20px 0', borderBottom: '1px solid var(--glass-border)', marginBottom: '20px' }}>
-          <h2 style={{ fontSize: '1.2rem', color: 'var(--primary)', fontWeight: 800 }}>FeeManager</h2>
+    <div className="app-layout">
+      <div className="sidebar">
+        <div style={{ padding: '0 0 20px 0', marginBottom: '30px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{ background: 'var(--primary)', color: 'white', padding: '8px', borderRadius: '8px' }}>< बिल्डिंग size={24} /></div>
+          <h2 style={{ fontSize: '1.4rem', color: 'var(--text)', fontWeight: 800 }}>FeeManager</h2>
         </div>
         
         {menuItems.map((item) => (
@@ -57,8 +58,11 @@ const AdminDashboard = () => {
             className={`btn ${location.pathname === item.path ? 'btn-primary' : ''}`}
             style={{ 
               justifyContent: 'flex-start', 
-              background: location.pathname === item.path ? '' : 'transparent',
-              padding: '12px 16px'
+              background: location.pathname === item.path ? 'var(--primary-bg)' : 'transparent',
+              color: location.pathname === item.path ? 'var(--primary)' : 'var(--text-muted)',
+              padding: '12px 16px',
+              border: 'none',
+              boxShadow: 'none'
             }}
           >
             <item.icon size={20} /> {item.name}
@@ -68,19 +72,40 @@ const AdminDashboard = () => {
         <button 
           onClick={handleLogout} 
           className="btn" 
-          style={{ marginTop: 'auto', justifyContent: 'flex-start', color: 'var(--error)', background: 'transparent' }}
+          style={{ marginTop: 'auto', justifyContent: 'flex-start', color: 'var(--error)', background: 'transparent', border: 'none', boxShadow: 'none' }}
         >
           <LogOut size={20} /> Logout
         </button>
       </div>
 
-      <div className="main-content">
-        <Routes>
-          <Route path="dashboard" element={<Overview stats={stats} />} />
-          <Route path="activity" element={<RecentPayments />} />
-          <Route path="departments" element={<DepartmentManagement college={stats.college} />} />
-          <Route path="messages" element={<AdminMessages />} />
-        </Routes>
+      <div className="main-wrapper">
+        <div className="top-navbar">
+          <div className="search-bar">
+            <Search size={18} color="var(--text-muted)" />
+            <input type="text" placeholder="Search across platform..." />
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+            <button className="btn" style={{ padding: '8px', borderRadius: '50%', border: 'none', boxShadow: 'none', background: 'var(--background)' }}><Bell size={20} color="var(--text-muted)" /></button>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', borderLeft: '1px solid var(--border)', paddingLeft: '20px' }}>
+              <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 'bold' }}>
+                <User size={20} />
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>Administrator</span>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Workspace</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="content-area">
+          <Routes>
+            <Route path="dashboard" element={<Overview stats={stats} />} />
+            <Route path="activity" element={<RecentPayments />} />
+            <Route path="departments" element={<DepartmentManagement college={stats.college} />} />
+            <Route path="messages" element={<AdminMessages />} />
+          </Routes>
+        </div>
       </div>
     </div>
   );
