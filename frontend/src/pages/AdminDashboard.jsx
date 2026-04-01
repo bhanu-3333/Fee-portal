@@ -110,66 +110,87 @@ const AdminDashboard = () => {
   );
 };
 
+const StatCard = ({ title, value, subtext, icon: Icon, bg, color, trend }) => (
+  <div style={{
+    background: bg,
+    borderRadius: '24px',
+    padding: '28px',
+    color: color,
+    boxShadow: '0 10px 30px rgba(0,0,0,0.05)',
+    display: 'flex',
+    flexDirection: 'column',
+    position: 'relative',
+    overflow: 'hidden',
+    border: '1px solid rgba(255,255,255,0.4)',
+    transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+    cursor: 'pointer'
+  }}
+  onMouseEnter={(e) => { e.currentTarget.style.transform = 'translateY(-5px)'; e.currentTarget.style.boxShadow = '0 15px 35px rgba(0,0,0,0.1)'; }}
+  onMouseLeave={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 10px 30px rgba(0,0,0,0.05)'; }}
+  >
+    <div style={{ position: 'absolute', top: '-15px', right: '-15px', opacity: 0.08, transform: 'scale(2.5)', pointerEvents: 'none' }}>
+      <Icon size={100} color={color} />
+    </div>
+    
+    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+      <div style={{ width: '52px', height: '52px', borderRadius: '16px', background: 'rgba(255,255,255,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(10px)' }}>
+        <Icon size={26} color={color} />
+      </div>
+      {trend && (
+        <span style={{ fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', background: 'rgba(255,255,255,0.3)', padding: '6px 12px', borderRadius: '20px', backdropFilter: 'blur(10px)' }}>
+          {trend}
+        </span>
+      )}
+    </div>
+    
+    <h3 style={{ fontSize: '3rem', fontWeight: 800, margin: '0 0 4px 0', letterSpacing: '-1px', lineHeight: 1 }}>{value}</h3>
+    <p style={{ margin: 0, fontSize: '1.05rem', fontWeight: 700, opacity: 0.9 }}>{title}</p>
+    {subtext && <p style={{ margin: '6px 0 0 0', fontSize: '0.85rem', opacity: 0.7, fontWeight: 500 }}>{subtext}</p>}
+  </div>
+);
+
 const Overview = ({ stats }) => (
   <div>
-    <h1 style={{ marginBottom: '30px' }}>Admin Dashboard</h1>
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px' }}>
-      <div className="glass card">
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <div>
-            <p style={{ color: 'var(--text-muted)' }}>Total Students</p>
-            <h2 style={{ fontSize: '2.5rem' }}>{stats.totalStudents}</h2>
-          </div>
-          <Users color="var(--primary)" size={40} />
-        </div>
-      </div>
-      <div className="glass card">
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <div>
-            <p style={{ color: 'var(--text-muted)' }}>Paid Students</p>
-            <h2 style={{ fontSize: '2.5rem', color: 'var(--success)' }}>{stats.paidStudents}</h2>
-          </div>
-          <CheckCircle color="var(--success)" size={40} />
-        </div>
-      </div>
-      <div className="glass card">
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <div>
-            <p style={{ color: 'var(--text-muted)' }}>Pending Payments</p>
-            <h2 style={{ fontSize: '2.5rem', color: 'var(--error)' }}>{stats.pendingStudents}</h2>
-          </div>
-          <Clock color="var(--error)" size={40} />
-        </div>
-      </div>
-      <Link to="/admin/departments" style={{ textDecoration: 'none', color: 'inherit' }}>
-        <div className="glass card" style={{ cursor: 'pointer', transition: 'all 0.2s' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <div>
-              <p style={{ color: 'var(--text-muted)' }}>Total Departments</p>
-              <h2 style={{ fontSize: '2.5rem', color: 'var(--text)' }}>{stats.totalDepartments}</h2>
-            </div>
-            <Folder color="var(--text-muted)" size={40} />
-          </div>
-        </div>
+    <div style={{ marginBottom: '28px' }}>
+      <h1 style={{ fontSize: '1.75rem', fontWeight: 800, margin: '0 0 6px 0', letterSpacing: '-0.5px' }}>Dashboard Overview</h1>
+      <p style={{ margin: 0, color: 'var(--text-muted)' }}>Institution metrics and status at a glance</p>
+    </div>
+
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px', marginBottom: '40px' }}>
+      <StatCard 
+        title="Total Students" 
+        value={stats.totalStudents} 
+        icon={Users} 
+        bg="linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%)"
+        color="#3730a3"
+        subtext="Across all departments"
+      />
+      <StatCard 
+        title="Paid Students" 
+        value={stats.paidStudents} 
+        icon={CheckCircle} 
+        bg="linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%)"
+        color="#065f46"
+        trend="Cleared"
+      />
+      <StatCard 
+        title="Unpaid Students" 
+        value={stats.pendingStudents} 
+        icon={Clock} 
+        bg="linear-gradient(135deg, #fee2e2 0%, #fecaca 100%)"
+        color="#991b1b"
+        trend="Action Needed"
+      />
+      <Link to="/admin/departments" style={{ textDecoration: 'none' }}>
+        <StatCard 
+          title="Departments" 
+          value={stats.totalDepartments} 
+          icon={Folder} 
+          bg="linear-gradient(135deg, #fef3c7 0%, #fde68a 100%)"
+          color="#92400e"
+          subtext="Click to manage →"
+        />
       </Link>
-      <div className="glass card">
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <div>
-            <p style={{ color: 'var(--text-muted)' }}>Fees Completed</p>
-            <h2 style={{ fontSize: '2.5rem', color: 'var(--success)' }}>{stats.dueFinished}</h2>
-          </div>
-          <CheckCircle color="var(--success)" size={40} />
-        </div>
-      </div>
-      <div className="glass card">
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          <div>
-            <p style={{ color: 'var(--text-muted)' }}>Fees Pending</p>
-            <h2 style={{ fontSize: '2.5rem', color: 'var(--error)' }}>{stats.dueNotFinished}</h2>
-          </div>
-          <AlertCircle color="var(--error)" size={40} />
-        </div>
-      </div>
     </div>
   </div>
 );
