@@ -350,11 +350,30 @@ const uploadStudents = async (req, res) => {
     }
 };
 
+// @desc    Admin replies to a message
+// @route   PATCH /api/admin/messages/:id/reply
+const replyToMessage = async (req, res) => {
+    try {
+        const { reply } = req.body;
+        const message = await Message.findById(req.params.id);
+        if (!message || String(message.collegeId) !== String(req.user.collegeId)) {
+            return res.status(404).json({ message: 'Message not found' });
+        }
+        message.reply = reply;
+        message.status = 'replied';
+        await message.save();
+        res.json(message);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
 module.exports = { 
     getDepartments, addDepartment, updateDepartment, deleteDepartment, 
     getYears, addYear, updateYear, deleteYear, 
     addStudent, getStudents, updateStudentFees, deleteStudent, 
     getDashboardStats, getRecentPayments,
-    getMessages, markMessageRead, deleteMessage,
+    getMessages, markMessageRead, deleteMessage, replyToMessage,
     uploadStudents
 };
+
