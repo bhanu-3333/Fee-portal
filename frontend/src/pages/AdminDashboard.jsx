@@ -47,7 +47,7 @@ const AdminDashboard = () => {
     <div className="app-layout">
       <div className="sidebar">
         <div style={{ padding: '0 0 20px 0', marginBottom: '30px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div style={{ background: 'var(--primary)', color: 'white', padding: '8px', borderRadius: '8px' }}>< बिल्डिंग size={24} /></div>
+          <div style={{ background: 'var(--primary)', color: 'white', padding: '8px', borderRadius: '8px', display: 'flex', alignItems: 'center' }}><Building size={20} /></div>
           <h2 style={{ fontSize: '1.4rem', color: 'var(--text)', fontWeight: 800 }}>FeeManager</h2>
         </div>
         
@@ -179,61 +179,53 @@ const RecentPayments = () => {
   const [payments, setPayments] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchPayments();
-  }, []);
+  useEffect(() => { fetchPayments(); }, []);
 
   const fetchPayments = async () => {
     try {
       const { data } = await api.get('/admin/recent-payments');
       setPayments(data);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
+    } catch (err) { console.error(err); }
+    finally { setLoading(false); }
   };
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '30px' }}>
-        <h1>Recent Payments Activity</h1>
+      <div style={{ marginBottom: '28px' }}>
+        <h1 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '6px' }}>Payment Activity</h1>
+        <p style={{ color: 'var(--text-muted)' }}>All successful transactions across departments</p>
       </div>
-
-      <div className="glass card" style={{ padding: 0, overflow: 'hidden' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-          <thead style={{ background: 'var(--glass)', color: 'var(--text-muted)' }}>
+      <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+        <table>
+          <thead>
             <tr>
-              <th style={{ padding: '16px' }}>Student Name</th>
+              <th>Student Name</th>
               <th>Category</th>
-              <th>Date & Time</th>
+              <th>Date &amp; Time</th>
               <th>Amount Paid</th>
               <th>Status</th>
-              <th>Pending Amount</th>
+              <th>Pending</th>
             </tr>
           </thead>
           <tbody>
+            {loading && <tr><td colSpan="6" style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>Loading...</td></tr>}
+            {!loading && payments.length === 0 && (
+              <tr><td colSpan="6" style={{ textAlign: 'center', padding: '40px', color: 'var(--text-muted)' }}>No recent payments found.</td></tr>
+            )}
             {payments.map(p => (
-              <tr key={p._id} style={{ borderBottom: '1px solid var(--glass-border)' }}>
-                <td style={{ padding: '16px', fontWeight: 'bold' }}>{p.studentId?.name || 'Unknown'}</td>
-                <td><span style={{ textTransform: 'capitalize' }}>{p.category || 'general'}</span></td>
-                <td>{new Date(p.date).toLocaleString()}</td>
-                <td><span style={{ color: 'var(--success)', fontWeight: 'bold' }}>₹{p.amount.toLocaleString('en-IN')}</span></td>
+              <tr key={p._id}>
+                <td style={{ fontWeight: 600 }}>{p.studentId?.name || 'Unknown'}</td>
                 <td>
-                  <span style={{ 
-                    padding: '4px 8px', borderRadius: '4px', fontSize: '0.8rem',
-                    background: '#ffffff22',
-                    color: 'var(--text)'
-                  }}>
-                    {p.status}
+                  <span style={{ textTransform: 'capitalize', background: '#ecfdf5', color: '#059669', padding: '3px 8px', borderRadius: '99px', fontSize: '0.8rem', fontWeight: 600 }}>
+                    {p.category || 'general'}
                   </span>
                 </td>
-                <td style={{ color: 'var(--error)' }}>₹{(p.studentId?.pendingAmount || 0).toLocaleString('en-IN')}</td>
+                <td style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>{new Date(p.date).toLocaleString('en-IN')}</td>
+                <td><span style={{ color: 'var(--success)', fontWeight: 700 }}>&#8377;{p.amount.toLocaleString('en-IN')}</span></td>
+                <td><span className="badge badge-success">{p.status}</span></td>
+                <td style={{ color: 'var(--error)' }}>&#8377;{(p.studentId?.pendingAmount || 0).toLocaleString('en-IN')}</td>
               </tr>
             ))}
-            {payments.length === 0 && (
-              <tr><td colSpan="6" style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>No recent payments.</td></tr>
-            )}
           </tbody>
         </table>
       </div>
@@ -785,10 +777,9 @@ const YearStudentList = ({ department, year, college, onBack }) => {
 const AdminMessages = () => {
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [replyText, setReplyText] = useState({});
 
-  useEffect(() => {
-    fetchMessages();
-  }, []);
+  useEffect(() => { fetchMessages(); }, []);
 
   const fetchMessages = async () => {
     try {
@@ -797,54 +788,110 @@ const AdminMessages = () => {
     } catch (err) { console.error(err); } finally { setLoading(false); }
   };
 
-  const markAsRead = async (id) => {
+  const handleReply = async (messageId) => {
+    if (!replyText[messageId]?.trim()) return;
     try {
-      await api.patch(`/admin/messages/${id}/read`);
+      await api.patch(`/admin/messages/${messageId}/reply`, { reply: replyText[messageId] });
+      setReplyText({ ...replyText, [messageId]: '' });
       fetchMessages();
     } catch (err) { console.error(err); }
   };
 
   const deleteMessage = async (id) => {
-    if (!window.confirm("Delete this message forever?")) return;
+    if (!window.confirm("Delete this message?")) return;
     try {
       await api.delete(`/admin/messages/${id}`);
       fetchMessages();
     } catch (err) { console.error(err); }
   };
 
+  const unreadCount = messages.filter(m => m.status === 'unread').length;
+
   return (
     <div>
-      <h1 style={{ marginBottom: '30px' }}>Student Messages</h1>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+      <div style={{ marginBottom: '28px' }}>
+        <h1 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '6px' }}>Student Messages</h1>
+        <p style={{ color: 'var(--text-muted)' }}>
+          {loading ? 'Loading...' : unreadCount > 0
+            ? <><span style={{ color: 'var(--error)', fontWeight: 600 }}>{unreadCount} unread</span> message{unreadCount > 1 ? 's' : ''}</>
+            : 'All messages reviewed'}
+        </p>
+      </div>
+
+      {!loading && messages.length === 0 && (
+        <div className="card" style={{ textAlign: 'center', padding: '60px' }}>
+          <MessageSquare size={40} color="var(--border)" style={{ margin: '0 auto 16px', display: 'block' }} />
+          <p style={{ color: 'var(--text-muted)' }}>No student messages yet.</p>
+        </div>
+      )}
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
         {messages.map(m => (
-          <div key={m._id} className="glass card" style={{ 
-            borderLeft: m.status === 'unread' ? '4px solid var(--primary)' : '1px solid var(--glass-border)',
-            background: m.status === 'unread' ? '#ffffff11' : 'var(--glass)'
+          <div key={m._id} className="card" style={{
+            margin: 0,
+            borderLeft: m.status === 'unread' ? '4px solid var(--error)'
+              : m.reply ? '4px solid var(--primary)'
+              : '4px solid var(--border)'
           }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '10px' }}>
+            {/* Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '14px' }}>
               <div>
-                <h3 style={{ margin: 0 }}>{m.subject}</h3>
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', margin: '5px 0 0 0' }}>
-                  From: <strong>{m.studentId?.name}</strong> ({m.studentId?.regNo}) • {m.studentId?.department} {m.studentId?.year} 
+                <p style={{ fontWeight: 700, fontSize: '1rem', marginBottom: '4px' }}>{m.subject || 'General Issue'}</p>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+                  From: <strong>{m.name || 'Student'}</strong>
+                  {m.regNo && ` (${m.regNo})`}
                 </p>
               </div>
-              <div style={{ textAlign: 'right' }}>
-                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{new Date(m.createdAt).toLocaleString()}</span>
-                <div style={{ marginTop: '10px', display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
-                  {m.status === 'unread' && (
-                    <button onClick={() => markAsRead(m._id)} className="btn btn-primary" style={{ padding: '6px 12px', fontSize: '0.8rem' }}><CheckCircle size={14} style={{ marginRight: '5px' }}/> Mark as Read</button>
-                  )}
-                  <button onClick={() => deleteMessage(m._id)} className="btn" style={{ padding: '6px', background: 'transparent', color: 'var(--error)', border: 'none' }}><Trash2 size={18} /></button>
-                </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                  {new Date(m.createdAt).toLocaleString('en-IN')}
+                </span>
+                {m.status === 'unread' && (
+                  <span style={{ background: '#fef2f2', color: 'var(--error)', padding: '3px 8px', borderRadius: '99px', fontSize: '0.75rem', fontWeight: 600 }}>Unread</span>
+                )}
+                {m.status === 'replied' && (
+                  <span className="badge badge-success">Replied</span>
+                )}
+                <button onClick={() => deleteMessage(m._id)} className="btn" style={{ padding: '5px', background: 'transparent', color: 'var(--error)', border: 'none' }}>
+                  <Trash2 size={16} />
+                </button>
               </div>
             </div>
-            <p style={{ margin: 0, background: '#00000033', borderRadius: '8px', padding: '15px', lineHeight: '1.5' }}>
-              {m.message}
-            </p>
+
+            {/* Student message bubble */}
+            <div style={{ background: 'var(--background)', borderRadius: '10px', padding: '14px', marginBottom: m.reply ? '12px' : '0' }}>
+              <p style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '6px' }}>Student</p>
+              <p style={{ margin: 0, lineHeight: 1.6, fontSize: '0.9rem' }}>{m.message}</p>
+            </div>
+
+            {/* Existing admin reply */}
+            {m.reply && (
+              <div style={{ background: 'var(--primary-bg)', borderRadius: '10px', padding: '14px', borderLeft: '3px solid var(--primary)', marginBottom: '12px' }}>
+                <p style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--primary)', marginBottom: '6px' }}>Your Reply</p>
+                <p style={{ margin: 0, lineHeight: 1.6, fontSize: '0.9rem' }}>{m.reply}</p>
+              </div>
+            )}
+
+            {/* Reply textarea */}
+            <div style={{ marginTop: '12px' }}>
+              <textarea
+                rows={2}
+                placeholder={m.reply ? 'Edit reply...' : 'Type a reply to this student...'}
+                value={replyText[m._id] || ''}
+                onChange={(e) => setReplyText({ ...replyText, [m._id]: e.target.value })}
+                style={{ width: '100%', resize: 'vertical', marginBottom: '8px', fontSize: '0.9rem' }}
+              />
+              <button
+                className="btn btn-primary"
+                onClick={() => handleReply(m._id)}
+                disabled={!replyText[m._id]?.trim()}
+                style={{ fontSize: '0.85rem', padding: '8px 16px' }}
+              >
+                <MessageSquare size={15} /> {m.reply ? 'Update Reply' : 'Send Reply'}
+              </button>
+            </div>
           </div>
         ))}
-        {messages.length === 0 && !loading && <p style={{ color: 'var(--text-muted)' }}>No messages found.</p>}
-        {loading && <p style={{ color: 'var(--text-muted)' }}>Loading...</p>}
       </div>
     </div>
   );
