@@ -85,8 +85,7 @@ const AdminDashboard = () => {
             <input type="text" placeholder="Search across platform..." />
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-            <button className="btn" style={{ padding: '8px', borderRadius: '50%', border: 'none', boxShadow: 'none', background: 'var(--background)' }}><Bell size={20} color="var(--text-muted)" /></button>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', borderLeft: '1px solid var(--border)', paddingLeft: '20px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingLeft: '20px' }}>
               <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 'bold' }}>
                 <User size={20} />
               </div>
