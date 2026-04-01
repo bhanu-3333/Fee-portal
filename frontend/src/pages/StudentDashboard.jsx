@@ -9,6 +9,67 @@ import {
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 
+// ---------- Custom Green Select Component ----------
+const CustomSelect = ({ value, onChange, options }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const selectedOption = options.find(o => o.value === value) || options[0];
+
+  return (
+    <div style={{ position: 'relative', width: '100%', userSelect: 'none' }}>
+      <div 
+        onClick={() => setIsOpen(!isOpen)}
+        style={{
+          width: '100%', padding: '12px 16px', borderRadius: '8px', 
+          border: `1px solid ${isOpen ? 'var(--primary)' : 'var(--border)'}`, 
+          background: 'var(--surface)', cursor: 'pointer',
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          boxShadow: isOpen ? '0 0 0 3px var(--primary-bg)' : 'none',
+          transition: 'all 0.2s ease', color: 'var(--text)'
+        }}
+      >
+        <span>{selectedOption ? selectedOption.label : 'Select...'}</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: isOpen ? 'rotate(180deg)' : 'none', transition: '0.2s', color: 'var(--text-muted)' }}><path d="m6 9 6 6 6-6"/></svg>
+      </div>
+      
+      {isOpen && (
+        <>
+          <div 
+            style={{ position: 'fixed', inset: 0, zIndex: 99 }} 
+            onClick={() => setIsOpen(false)} 
+          />
+          <div style={{
+            position: 'absolute', top: '100%', left: 0, right: 0, 
+            marginTop: '4px', background: 'var(--surface)', 
+            border: '1px solid var(--border)', borderRadius: '8px', 
+            boxShadow: 'var(--shadow-lg)', zIndex: 100,
+            overflow: 'hidden'
+          }}>
+            {options.map(opt => (
+              <div 
+                key={opt.value}
+                onClick={() => { onChange(opt.value); setIsOpen(false); }}
+                style={{
+                  padding: '12px 16px', cursor: 'pointer', transition: 'all 0.1s ease',
+                  background: value === opt.value ? 'var(--primary-bg)' : 'transparent',
+                  color: value === opt.value ? 'var(--primary)' : 'var(--text)',
+                  fontWeight: value === opt.value ? 600 : 400,
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = 'var(--primary)'; e.currentTarget.style.color = 'white'; }}
+                onMouseLeave={e => { 
+                  e.currentTarget.style.background = value === opt.value ? 'var(--primary-bg)' : 'transparent'; 
+                  e.currentTarget.style.color = value === opt.value ? 'var(--primary)' : 'var(--text)'; 
+                }}
+              >
+                {opt.label}
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
+
 // ---------- Layout Wrapper ----------
 const StudentLayout = ({ student, handleLogout }) => {
   const location = useLocation();
@@ -237,16 +298,18 @@ const OverviewPage = () => {
             </div>
           ) : (
             <>
-              <div className="input-group">
+              <div className="input-group" style={{ position: 'relative', zIndex: 10 }}>
                 <label>Fee Category</label>
-                <select value={payCategory} onChange={e => { setPayCategory(e.target.value); setPayAmount(''); }}>
-                  {['tuition', 'exam', 'transport', 'hostel', 'breakage'].map(cat => {
+                <CustomSelect 
+                  value={payCategory} 
+                  onChange={(val) => { setPayCategory(val); setPayAmount(''); }}
+                  options={['tuition', 'exam', 'transport', 'hostel', 'breakage'].map(cat => {
                     const f = student.fees[cat];
                     const t = typeof f === 'object' ? f.total : (Number(f) || 0);
                     const p = typeof f === 'object' ? f.paid : 0;
-                    return <option key={cat} value={cat}>{cat.charAt(0).toUpperCase() + cat.slice(1)} — Pending ₹{t - p}</option>;
+                    return { value: cat, label: `${cat.charAt(0).toUpperCase() + cat.slice(1)} — Pending ₹${t - p}` };
                   })}
-                </select>
+                />
               </div>
               <div className="input-group">
                 <label>Amount (₹)</label>
