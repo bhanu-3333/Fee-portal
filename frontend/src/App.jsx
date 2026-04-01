@@ -15,7 +15,8 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<AdminSignup />} />
           <Route path="/admin/*" element={user?.role === 'admin' ? <AdminDashboard /> : <Navigate to="/login" />} />
-          <Route path="/student" element={user?.role === 'student' ? <StudentDashboard /> : <Navigate to="/login" />} />
+          <Route path="/student/*" element={user?.role === 'student' ? <StudentDashboard /> : <Navigate to="/login" />} />
+          <Route path="/student" element={<Navigate to="/student/dashboard" />} />
           <Route path="/" element={<Navigate to="/login" />} />
         </Routes>
       </div>
