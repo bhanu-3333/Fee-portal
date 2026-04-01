@@ -175,6 +175,13 @@ tbody tr:hover {
   z-index: 10;
 }
 
+.sidebar a,
+.sidebar a:hover,
+.sidebar a:visited {
+  text-decoration: none !important;
+  color: inherit;
+}
+
 .main-wrapper {
   flex: 1;
   margin-left: 260px;
