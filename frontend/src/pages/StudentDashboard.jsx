@@ -84,9 +84,6 @@ const StudentLayout = ({ student, handleLogout }) => {
     <div className="app-layout">
       <div className="sidebar">
         <div style={{ marginBottom: '32px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div style={{ background: 'var(--primary)', color: 'white', padding: '8px', borderRadius: '8px' }}>
-            <LayoutDashboard size={20} />
-          </div>
           <div>
             <h2 style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--text)', lineHeight: 1.2 }}>Fee Portal</h2>
             <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Student</p>
@@ -278,9 +275,6 @@ const OverviewPage = () => {
               <div>
                 <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', fontWeight: 500 }}>{label}</p>
                 <p style={{ fontSize: '1.6rem', fontWeight: 800, marginTop: '6px' }}>{value}</p>
-              </div>
-              <div style={{ width: '44px', height: '44px', borderRadius: '12px', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Icon size={22} color={color} />
               </div>
             </div>
           </div>
