@@ -137,7 +137,7 @@ const StudentLayout = ({ student, handleLogout }) => {
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             {student?.collegeId?.logo && (
               <img src={`${import.meta.env.VITE_BACKEND_URL || 'https://fee-portal-1.onrender.com'}/${student.collegeId.logo}`} alt="logo"
-                style={{ height: '40px', borderRadius: '8px', objectFit: 'contain' }}
+                style={{ height: '52px', borderRadius: '8px', objectFit: 'contain' }}
                 onError={(e) => { e.target.style.display = 'none'; }}
               />
             )}
