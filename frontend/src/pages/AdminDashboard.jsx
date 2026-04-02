@@ -19,7 +19,7 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     fetchStats();
-  }, []);
+  }, [location.pathname]);
 
   const fetchStats = async () => {
     try {
@@ -47,7 +47,7 @@ const AdminDashboard = () => {
     <div className="app-layout">
       <div className="sidebar">
         <div style={{ padding: '0 0 20px 0', marginBottom: '30px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <h2 style={{ fontSize: '1.4rem', color: 'var(--text)', fontWeight: 800 }}>FeeManager</h2>
+          <h2 style={{ fontSize: '1.4rem', color: 'var(--text)', fontWeight: 800 }}>{stats.college?.name || 'FeeManager'}</h2>
         </div>
         
         {menuItems.map((item) => (
@@ -82,13 +82,12 @@ const AdminDashboard = () => {
           <div></div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingLeft: '20px' }}>
-              <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 'bold' }}>
-                <User size={20} />
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column' }}>
-                <span style={{ fontSize: '0.85rem', fontWeight: 600 }}>Administrator</span>
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Workspace</span>
-              </div>
+              {stats.college?.logo && (
+                <img src={`${import.meta.env.VITE_BACKEND_URL || 'https://fee-portal-1.onrender.com'}/${stats.college.logo}`} alt="logo"
+                  style={{ height: '38px', borderRadius: '8px', objectFit: 'contain' }}
+                  onError={(e) => { e.target.style.display = 'none'; }}
+                />
+              )}
             </div>
           </div>
         </div>
