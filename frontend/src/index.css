@@ -273,26 +273,97 @@ tbody tr:hover {
   color: #d97706;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
+/* ========================================= */
+/* --- RESPONSIVE / MOBILE CSS SUPPORT ---   */
+/* ========================================= */
+@media screen and (max-width: 768px) {
+  /* Core Layout */
   .app-layout {
     flex-direction: column;
   }
+  
   .sidebar {
     width: 100%;
     position: relative;
     padding: 16px;
-    flex-direction: row;
     border-right: none;
     border-bottom: 1px solid var(--border);
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    white-space: nowrap;
+    z-index: 10;
   }
+
+  .sidebar > div, .sidebar > a, .sidebar > button {
+    flex-shrink: 0;
+    margin-bottom: 0 !important;
+    margin-right: 12px;
+  }
+  
   .main-wrapper {
     margin-left: 0;
   }
+  
+  /* Top Navbar */
   .top-navbar {
-    padding: 0 20px;
+    padding: 16px;
+    height: auto;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+    gap: 16px;
   }
+  
+  .top-navbar > div {
+    justify-content: space-between;
+  }
+  
+  .search-bar {
+    width: 100%;
+  }
+  
+  /* Content Area */
   .content-area {
-    padding: 20px;
+    padding: 16px;
   }
+  
+  /* Typography & Components */
+  h1 { font-size: 1.8rem !important; }
+  h2 { font-size: 1.5rem !important; }
+  h3 { font-size: 1.2rem !important; }
+  
+  .card, .glass {
+    padding: 20px !important;
+  }
+  
+  /* Form Inputs Row Stacking */
+  form > div[style*="display: grid"],
+  div[style*="gridTemplateColumns:"] {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+  
+  /* Tables horizontally scrollable */
+  .card[style*="overflow: hidden"],
+  .glass[style*="overflow: hidden"],
+  div[style*="overflow: 'hidden'"] {
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  table {
+    min-width: 700px; /* forces horizontal scroll on mobile */
+  }
+  
+  /* Profile Header divider removal */
+  .top-navbar > div > div[style*="borderLeft"] {
+    padding-left: 0 !important;
+    border-left: none !important;
+  }
+}
+
+@media screen and (max-width: 480px) {
+  table { min-width: 600px; }
+  h1 { font-size: 1.5rem !important; }
 }
