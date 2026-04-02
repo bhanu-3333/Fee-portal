@@ -857,9 +857,11 @@ const AdminMessages = () => {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '14px' }}>
               <div>
                 <p style={{ fontWeight: 700, fontSize: '1rem', marginBottom: '4px' }}>{m.subject || 'General Issue'}</p>
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-                  From: <strong>{m.name || 'Student'}</strong>
-                  {m.regNo && ` (${m.regNo})`}
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                  <span>From: <strong>{m.studentId?.name || 'Unknown Student'}</strong> {m.studentId?.regNo && `(${m.studentId.regNo})`}</span>
+                  {m.studentId?.department && m.studentId?.year && (
+                    <span style={{ fontSize: '0.75rem' }}>{m.studentId.department} — {m.studentId.year}</span>
+                  )}
                 </p>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -880,7 +882,7 @@ const AdminMessages = () => {
 
             {/* Student message bubble */}
             <div style={{ background: 'var(--background)', borderRadius: '10px', padding: '14px', marginBottom: m.reply ? '12px' : '0' }}>
-              <p style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '6px' }}>Student</p>
+              <p style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '6px' }}>{m.studentId?.name || 'Student'}</p>
               <p style={{ margin: 0, lineHeight: 1.6, fontSize: '0.9rem' }}>{m.message}</p>
             </div>
 
