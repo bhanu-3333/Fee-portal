@@ -47,7 +47,6 @@ const AdminDashboard = () => {
     <div className="app-layout">
       <div className="sidebar">
         <div style={{ padding: '0 0 20px 0', marginBottom: '30px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <div style={{ background: 'var(--primary)', color: 'white', padding: '8px', borderRadius: '8px', display: 'flex', alignItems: 'center' }}><Building size={20} /></div>
           <h2 style={{ fontSize: '1.4rem', color: 'var(--text)', fontWeight: 800 }}>FeeManager</h2>
         </div>
         
@@ -80,10 +79,7 @@ const AdminDashboard = () => {
 
       <div className="main-wrapper">
         <div className="top-navbar">
-          <div className="search-bar">
-            <Search size={18} color="var(--text-muted)" />
-            <input type="text" placeholder="Search across platform..." />
-          </div>
+          <div></div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingLeft: '20px' }}>
               <div style={{ width: '38px', height: '38px', borderRadius: '50%', background: 'var(--primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontWeight: 'bold' }}>
