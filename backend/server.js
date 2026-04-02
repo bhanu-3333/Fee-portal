@@ -34,6 +34,11 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/student', studentRoutes);
 app.use('/api/payment', paymentRoutes);
 
+// Root Route
+app.get('/', (req, res) => {
+  res.send('College Fee Management API is running...');
+});
+
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, console.log(`Server running on port ${PORT}`));
