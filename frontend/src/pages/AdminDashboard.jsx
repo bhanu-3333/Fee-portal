@@ -84,7 +84,7 @@ const AdminDashboard = () => {
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingLeft: '20px' }}>
               {stats.college?.logo && (
                 <img src={`${import.meta.env.VITE_BACKEND_URL || 'https://fee-portal-1.onrender.com'}/${stats.college.logo}`} alt="logo"
-                  style={{ height: '38px', borderRadius: '8px', objectFit: 'contain' }}
+                  style={{ height: '52px', borderRadius: '8px', objectFit: 'contain' }}
                   onError={(e) => { e.target.style.display = 'none'; }}
                 />
               )}
