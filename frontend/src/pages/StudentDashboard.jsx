@@ -128,12 +128,6 @@ const StudentLayout = ({ student, handleLogout }) => {
 
       <div className="main-wrapper">
         <div className="top-navbar">
-          <div>
-            <h1 style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--text)' }}>
-              {student?.collegeId?.name || 'College Portal'}
-            </h1>
-            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Student Dashboard</p>
-          </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
             {student?.collegeId?.logo && (
               <img src={`${import.meta.env.VITE_BACKEND_URL || 'https://fee-portal-1.onrender.com'}/${student.collegeId.logo}`} alt="logo"
@@ -141,9 +135,17 @@ const StudentLayout = ({ student, handleLogout }) => {
                 onError={(e) => { e.target.style.display = 'none'; }}
               />
             )}
+            <div>
+              <h1 style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--text)', margin: 0 }}>
+                {student?.collegeId?.name || 'College Portal'}
+              </h1>
+              <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', margin: 0 }}>Student Dashboard</p>
+            </div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
             <div style={{ fontSize: '0.85rem', textAlign: 'right' }}>
-              <p style={{ fontWeight: 600 }}>{student?.department}</p>
-              <p style={{ color: 'var(--text-muted)' }}>{student?.year} • {student?.type}</p>
+              <p style={{ fontWeight: 600, margin: 0 }}>{student?.department}</p>
+              <p style={{ color: 'var(--text-muted)', margin: 0 }}>{student?.year} • {student?.type}</p>
             </div>
           </div>
         </div>
