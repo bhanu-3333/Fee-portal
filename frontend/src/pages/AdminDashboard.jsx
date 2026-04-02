@@ -629,8 +629,8 @@ const YearStudentList = ({ department, year, college, onBack }) => {
           {uploadResult && (
             <div style={{ marginTop: '20px', padding: '15px', background: '#ffffff11', borderRadius: '8px' }}>
               <h4 style={{ margin: '0 0 10px 0' }}>Upload Summary</h4>
-              <p style={{ margin: '5px 0', color: 'var(--success)' }}>✅ Successfully Added: {uploadResult.successCount} students</p>
-              <p style={{ margin: '5px 0', color: 'var(--error)' }}>⚠️ Skipped / Failed: {uploadResult.skippedCount} rows</p>
+              <p style={{ margin: '5px 0', color: 'var(--success)' }}>Successfully Added: {uploadResult.successCount} students</p>
+              <p style={{ margin: '5px 0', color: 'var(--error)' }}>Skipped / Failed: {uploadResult.skippedCount} rows</p>
               
               {uploadResult.errors && uploadResult.errors.length > 0 && (
                 <div style={{ marginTop: '15px', maxHeight: '150px', overflowY: 'auto', background: 'rgba(0,0,0,0.5)', padding: '10px', borderRadius: '5px' }}>
