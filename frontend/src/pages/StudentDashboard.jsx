@@ -601,7 +601,7 @@ const MessagesPage = () => {
               {/* Admin reply bubble */}
               {msg.reply && (
                 <div style={{ background: 'var(--primary-bg)', borderRadius: '12px', padding: '14px', borderLeft: '3px solid var(--primary)' }}>
-                  <p style={{ fontSize: '0.8rem', color: 'var(--primary)', fontWeight: 700, marginBottom: '6px' }}>🏫 Admin Reply</p>
+                  <p style={{ fontSize: '0.8rem', color: 'var(--primary)', fontWeight: 700, marginBottom: '6px' }}>Admin Reply</p>
                   <p style={{ fontSize: '0.9rem', lineHeight: 1.6 }}>{msg.reply}</p>
                 </div>
               )}
