@@ -694,7 +694,21 @@ const YearStudentList = ({ department, year, college, onBack }) => {
               {['tuition', 'exam', 'transport', 'hostel', 'breakage'].map(fee => (
                 <div key={fee} className="input-group">
                   <label style={{ textTransform: 'capitalize' }}>{fee}</label>
-                  <input type="number" required value={typeof editingStudent.fees[fee] === 'object' ? editingStudent.fees[fee].total : editingStudent.fees[fee] || 0} onChange={(e) => setEditingStudent({...editingStudent, fees: { ...editingStudent.fees, [fee]: e.target.value }})} />
+                  <input 
+                    type="number" 
+                    required 
+                    value={typeof editingStudent.fees[fee] === 'object' ? editingStudent.fees[fee].total : editingStudent.fees[fee] || 0} 
+                    onChange={(e) => setEditingStudent({
+                      ...editingStudent, 
+                      fees: { 
+                        ...editingStudent.fees, 
+                        [fee]: { 
+                          ...editingStudent.fees[fee], 
+                          total: Number(e.target.value) 
+                        } 
+                      }
+                    })} 
+                  />
                 </div>
               ))}
             </div>
