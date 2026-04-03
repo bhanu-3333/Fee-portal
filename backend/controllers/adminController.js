@@ -199,19 +199,48 @@ const updateStudentFees = async (req, res) => {
         const student = await Student.findOne({ _id: req.params.id, collegeId: req.user.collegeId });
         if (!student) return res.status(404).json({ message: 'Student not found' });
 
-        const totalFees = Object.values(fees).reduce((a, b) => a + (Number(b) || 0), 0);
+        // Support both flat { tuition: 500 } and nested { tuition: { total: 500 } } formats
+        const getFeeVal = (category) => {
+            if (!fees[category]) return 0;
+            if (typeof fees[category] === 'object' && fees[category] !== null) {
+                return Number(fees[category].total) || 0;
+            }
+            return Number(fees[category]) || 0;
+        };
+
+        // Update individual category totals
+        student.fees.tuition.total = getFeeVal('tuition');
+        student.fees.exam.total = getFeeVal('exam');
+        student.fees.transport.total = getFeeVal('transport');
+        student.fees.hostel.total = getFeeVal('hostel');
+        student.fees.breakage.total = getFeeVal('breakage');
+
+        // Calculate the new grand total from categories
+        const newTotalFees = 
+            student.fees.tuition.total + 
+            student.fees.exam.total + 
+            student.fees.transport.total + 
+            student.fees.hostel.total + 
+            student.fees.breakage.total;
         
-        student.fees.tuition.total = Number(fees.tuition) || 0;
-        student.fees.exam.total = Number(fees.exam) || 0;
-        student.fees.transport.total = Number(fees.transport) || 0;
-        student.fees.hostel.total = Number(fees.hostel) || 0;
-        student.fees.breakage.total = Number(fees.breakage) || 0;
-        student.fees.total = totalFees;
+        student.fees.total = newTotalFees;
 
-        student.pendingAmount = totalFees - student.paidAmount;
+        // Recalculate pending amount (Total - what they already paid)
+        student.pendingAmount = newTotalFees - (student.paidAmount || 0);
 
-        await student.save();
-        res.json(student);
+        // Update the student and force the nested object to persist
+        const updatedStudent = await Student.findByIdAndUpdate(
+            student._id,
+            { 
+                $set: { 
+                    fees: student.fees,
+                    pendingAmount: student.pendingAmount 
+                } 
+            },
+            { new: true, runValidators: true }
+        );
+
+        res.json(updatedStudent);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
