@@ -17,6 +17,7 @@ const AdminDashboard = () => {
     totalDepartments: 0, dueFinished: 0, dueNotFinished: 0
   });
 
+  
   useEffect(() => {
     fetchStats();
   }, [location.pathname]);
