@@ -208,36 +208,32 @@ const updateStudentFees = async (req, res) => {
             return Number(fees[category]) || 0;
         };
 
-        // Update individual category totals
-        student.fees.tuition.total = getFeeVal('tuition');
-        student.fees.exam.total = getFeeVal('exam');
-        student.fees.transport.total = getFeeVal('transport');
-        student.fees.hostel.total = getFeeVal('hostel');
-        student.fees.breakage.total = getFeeVal('breakage');
+        // Safely extract the new total for each category
+        const tuitionTotal = getFeeVal('tuition');
+        const examTotal = getFeeVal('exam');
+        const transportTotal = getFeeVal('transport');
+        const hostelTotal = getFeeVal('hostel');
+        const breakageTotal = getFeeVal('breakage');
 
-        // Calculate the new grand total from categories
-        const newTotalFees = 
-            student.fees.tuition.total + 
-            student.fees.exam.total + 
-            student.fees.transport.total + 
-            student.fees.hostel.total + 
-            student.fees.breakage.total;
-        
-        student.fees.total = newTotalFees;
+        // Calculate the new grand total
+        const newTotalFees = tuitionTotal + examTotal + transportTotal + hostelTotal + breakageTotal;
+        const newPendingAmount = newTotalFees - (student.paidAmount || 0);
 
-        // Recalculate pending amount (Total - what they already paid)
-        student.pendingAmount = newTotalFees - (student.paidAmount || 0);
-
-        // Update the student and force the nested object to persist
+        // Update the student using strict MongoDB dot-notation to bypass any Mongoose tracking issues
         const updatedStudent = await Student.findByIdAndUpdate(
             student._id,
             { 
                 $set: { 
-                    fees: student.fees,
-                    pendingAmount: student.pendingAmount 
+                    'fees.tuition.total': tuitionTotal,
+                    'fees.exam.total': examTotal,
+                    'fees.transport.total': transportTotal,
+                    'fees.hostel.total': hostelTotal,
+                    'fees.breakage.total': breakageTotal,
+                    'fees.total': newTotalFees,
+                    'pendingAmount': newPendingAmount
                 } 
             },
-            { new: true, runValidators: true }
+            { new: true }
         );
 
         res.json(updatedStudent);
