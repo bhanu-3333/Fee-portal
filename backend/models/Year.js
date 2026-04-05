@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require('mongoose'); // verified
 
 const yearSchema = new mongoose.Schema({
     departmentId: { type: mongoose.Schema.Types.ObjectId, ref: 'Department', required: true },
