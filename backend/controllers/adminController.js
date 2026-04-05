@@ -184,7 +184,7 @@ const getDashboardStats = async (req, res) => {
             totalDepartments,
             dueFinished: paidStudents,
             dueNotFinished: pendingStudents,
-            college: college ? { name: college.name, logo: college.logo } : null
+            college: college ? { name: college.name, logo: college.logo, collegeId: college.collegeId } : null
         });
     } catch (error) {
         res.status(500).json({ message: error.message });
