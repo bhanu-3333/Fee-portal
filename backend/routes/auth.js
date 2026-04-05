@@ -1,4 +1,4 @@
-const express = require('express');
+const express = require('express'); // verified
 const router = express.Router();
 const { adminSignup, adminLogin, studentLogin } = require('../controllers/authController');
 const multer = require('multer');
