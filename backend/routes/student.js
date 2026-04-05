@@ -1,4 +1,4 @@
-const express = require('express');
+const express = require('express'); // verified
 const router = express.Router();
 const { getStudentDashboard, sendMessage, getMyMessages } = require('../controllers/studentController');
 const { protect } = require('../middleware/auth');
