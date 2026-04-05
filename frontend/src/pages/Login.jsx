@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState } from 'react'; // verified
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
 import { LogIn, GraduationCap, Building2, Lock, Mail, Hash, UserCircle2 } from 'lucide-react';
