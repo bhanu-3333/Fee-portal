@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react'; // verified
 import { Routes, Route, Link, useNavigate, useLocation } from 'react-router-dom';
 import api from '../services/api';
 import { 
   LayoutDashboard, Users, Building, Calculator, 
   LogOut, Plus, Search, Filter, Edit3, Trash2, CheckCircle, Clock,
-  Folder, FolderOpen, ChevronRight, ArrowLeft, MoreVertical, Activity, AlertCircle, MessageSquare, Download, Upload, Bell, User
+  Folder, FolderOpen, ChevronRight, ArrowLeft, MoreVertical, Activity, AlertCircle, MessageSquare, Download, Upload, Bell, User, X
 } from 'lucide-react';
 import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
@@ -80,7 +80,18 @@ const AdminDashboard = () => {
 
       <div className="main-wrapper">
         <div className="top-navbar">
-          <div></div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            {stats.college?.collegeId && (
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: '8px',
+                background: 'var(--primary-bg)', border: '1px solid var(--primary)',
+                borderRadius: '8px', padding: '6px 14px'
+              }}>
+                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>College Code</span>
+                <span style={{ fontSize: '0.95rem', color: 'var(--primary)', fontWeight: 800, letterSpacing: '0.05em' }}>{stats.college.collegeId}</span>
+              </div>
+            )}
+          </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingLeft: '20px' }}>
               {stats.college?.logo && (
@@ -606,7 +617,7 @@ const YearStudentList = ({ department, year, college, onBack }) => {
 
       {showUploadModal && (
         <div className="glass card" style={{ position: 'relative', marginBottom: '40px' }}>
-          <button onClick={() => { setShowUploadModal(false); setUploadResult(null); setUploadFile(null); }} style={{ position: 'absolute', right: '20px', top: '20px', background: 'transparent', border: 'none', color: 'white', cursor: 'pointer' }}>Close</button>
+          <button onClick={() => { setShowUploadModal(false); setUploadResult(null); setUploadFile(null); }} style={{ position: 'absolute', right: '20px', top: '20px', background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}><X size={24} /></button>
           <h3>Bulk Upload Students</h3>
           
           <div style={{ display: 'flex', gap: '15px', marginTop: '15px', marginBottom: '20px' }}>
@@ -649,7 +660,7 @@ const YearStudentList = ({ department, year, college, onBack }) => {
 
       {showAddForm && (
         <div className="glass card" style={{ position: 'relative', marginBottom: '40px' }}>
-          <button onClick={() => setShowAddForm(false)} style={{ position: 'absolute', right: '20px', top: '20px', background: 'transparent', border: 'none', color: 'white', cursor: 'pointer' }}>Close</button>
+          <button onClick={() => setShowAddForm(false)} style={{ position: 'absolute', right: '20px', top: '20px', background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}><X size={24} /></button>
           <h3>Add Student to {department.name} - {year.name}</h3>
           <form onSubmit={handleAddStudent} style={{ marginTop: '20px' }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
@@ -688,7 +699,7 @@ const YearStudentList = ({ department, year, college, onBack }) => {
 
       {editingStudent && (
         <div className="glass card" style={{ position: 'relative', marginBottom: '40px' }}>
-          <button onClick={() => setEditingStudent(null)} style={{ position: 'absolute', right: '20px', top: '20px', background: 'transparent', border: 'none', color: 'white', cursor: 'pointer' }}>Close</button>
+          <button onClick={() => setEditingStudent(null)} style={{ position: 'absolute', right: '20px', top: '20px', background: 'transparent', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}><X size={24} /></button>
           <h3>Edit Fees for {editingStudent.name}</h3>
           <form onSubmit={submitEditFee} style={{ marginTop: '20px' }}>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '10px' }}>
