@@ -47,8 +47,11 @@ const AdminDashboard = () => {
   return (
     <div className="app-layout">
       <div className="sidebar">
-        <div style={{ padding: '0 0 20px 0', marginBottom: '30px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <h2 style={{ fontSize: '1.4rem', color: 'var(--text)', fontWeight: 800 }}>{stats.college?.name || 'FeeManager'}</h2>
+        <div style={{ padding: '0 0 20px 0', marginBottom: '30px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          <h2 style={{ fontSize: '1.4rem', color: 'var(--text)', fontWeight: 800, margin: 0 }}>{stats.college?.name || 'FeeManager'}</h2>
+          {stats.college?.collegeCode && (
+            <span style={{ fontSize: '0.85rem', color: 'var(--primary)', fontWeight: 600 }}>Code: {stats.college.collegeCode}</span>
+          )}
         </div>
         
         {menuItems.map((item) => (
@@ -81,16 +84,14 @@ const AdminDashboard = () => {
       <div className="main-wrapper">
         <div className="top-navbar">
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            {stats.college?.collegeId && (
-              <div style={{
-                display: 'flex', alignItems: 'center', gap: '8px',
-                background: 'var(--primary-bg)', border: '1px solid var(--primary)',
-                borderRadius: '8px', padding: '6px 14px'
-              }}>
-                <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>College Code</span>
-                <span style={{ fontSize: '0.95rem', color: 'var(--primary)', fontWeight: 800, letterSpacing: '0.05em' }}>{stats.college.collegeId}</span>
-              </div>
-            )}
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: '8px',
+              background: 'rgba(5, 150, 105, 0.1)', border: '1px solid var(--primary)',
+              borderRadius: '8px', padding: '6px 14px'
+            }}>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Institution ID</span>
+              <span style={{ fontSize: '0.95rem', color: 'var(--primary)', fontWeight: 800, letterSpacing: '0.05em' }}>{stats.college?.collegeCode || '...'}</span>
+            </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px', paddingLeft: '20px' }}>
