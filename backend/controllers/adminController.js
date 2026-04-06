@@ -175,8 +175,8 @@ const getDashboardStats = async (req, res) => {
         const paidStudents = await Student.countDocuments({ collegeId: req.user.collegeId, pendingAmount: 0 });
         const pendingStudents = await Student.countDocuments({ collegeId: req.user.collegeId, pendingAmount: { $gt: 0 } });
         const totalDepartments = await Department.countDocuments({ collegeId: req.user.collegeId });
-        const college = await College.findById(req.user.collegeId);
-
+        const college = await College.findById(req.user.collegeId).lean();
+        
         res.json({ 
             totalStudents, 
             paidStudents, 
@@ -184,7 +184,11 @@ const getDashboardStats = async (req, res) => {
             totalDepartments,
             dueFinished: paidStudents,
             dueNotFinished: pendingStudents,
-            college: college ? { name: college.name, logo: college.logo, collegeId: college.collegeId } : null
+            college: college ? { 
+                name: college.name, 
+                logo: college.logo, 
+                collegeCode: college.collegeId 
+            } : null
         });
     } catch (error) {
         res.status(500).json({ message: error.message });
