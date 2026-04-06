@@ -7,16 +7,14 @@ const Message = require('../models/Message');
 const bcrypt = require('bcryptjs');
 const xlsx = require('xlsx');
 
+const asyncHandler = require('express-async-handler');
+
 // @desc    Get departments
 // @route   GET /api/admin/departments
-const getDepartments = async (req, res) => {
-    try {
-        const departments = await Department.find({ collegeId: req.user.collegeId });
-        res.json(departments);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-};
+const getDepartments = asyncHandler(async (req, res) => {
+  const departments = await Department.find({ collegeId: req.user.collegeId });
+  res.json(departments);
+});
 
 // @desc    Add department
 // @route   POST /api/admin/departments
