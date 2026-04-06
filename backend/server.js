@@ -39,6 +39,8 @@ const adminRoutes = require('./routes/admin.js');
 const studentRoutes = require('./routes/student.js');
 const paymentRoutes = require('./routes/payment.js');
 
+const { notFound, errorHandler } = require('./middleware/errorMiddleware');
+
 // Mount routers
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
@@ -49,6 +51,10 @@ app.use('/api/payment', paymentRoutes);
 app.get('/', (req, res) => {
   res.send('College Fee Management API is running...');
 });
+
+// Error Handling Middleware
+app.use(notFound);
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 5000;
 
