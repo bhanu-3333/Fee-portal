@@ -1,7 +1,7 @@
 import React, { useState } from 'react'; // verified
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
-import { LogIn, GraduationCap, Building2, Lock, Mail, Hash, UserCircle2 } from 'lucide-react';
+import { LogIn, GraduationCap, Building2, Lock, Mail, Hash, UserCircle2, Eye, EyeOff, Loader2 } from 'lucide-react';
 
 const Login = () => {
   const [role, setRole] = useState('student');
@@ -9,6 +9,7 @@ const Login = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [firstTime, setFirstTime] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   
@@ -41,7 +42,7 @@ const Login = () => {
   };
 
   return (
-    <div style={{ 
+    <div className="fade-in" style={{ 
       display: 'flex', 
       alignItems: 'center', 
       justifyContent: 'center', 
@@ -49,7 +50,7 @@ const Login = () => {
       background: 'var(--background)',
       padding: '20px'
     }}>
-      <div className="card" style={{ width: '100%', maxWidth: '440px', padding: '48px', boxShadow: 'var(--shadow-lg)' }}>
+      <div className="card slide-up" style={{ width: '100%', maxWidth: '440px', padding: '48px', boxShadow: 'var(--shadow-lg)', border: '1px solid var(--border)' }}>
         
         {/* Logo/Icon Area */}
         <div style={{ textAlign: 'center', marginBottom: '32px' }}>
@@ -62,7 +63,8 @@ const Login = () => {
             alignItems: 'center', 
             justifyContent: 'center',
             margin: '0 auto 16px',
-            color: 'var(--primary)'
+            color: 'var(--primary)',
+            animation: 'float 3s ease-in-out infinite'
           }}>
             <GraduationCap size={32} />
           </div>
@@ -81,19 +83,34 @@ const Login = () => {
           borderRadius: '12px', 
           padding: '4px', 
           marginBottom: '28px',
-          border: '1px solid var(--border)'
+          border: '1px solid var(--border)',
+          position: 'relative'
         }}>
+          {/* Active Tab Indicator */}
+          <div style={{
+            position: 'absolute',
+            top: '4px',
+            bottom: '4px',
+            left: role === 'student' ? '4px' : 'calc(50% + 2px)',
+            width: 'calc(50% - 6px)',
+            background: 'var(--surface)',
+            borderRadius: '8px',
+            boxShadow: 'var(--shadow-sm)',
+            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+            zIndex: 1
+          }} />
+          
           <button 
             type="button"
             onClick={() => { setRole('student'); setError(''); setFirstTime(false); }}
             style={{ 
               flex: 1, padding: '10px', border: 'none', borderRadius: '8px', 
-              background: role === 'student' ? 'var(--surface)' : 'transparent',
+              background: 'transparent',
               color: role === 'student' ? 'var(--primary)' : 'var(--text-muted)',
-              boxShadow: role === 'student' ? 'var(--shadow-sm)' : 'none',
               cursor: 'pointer', transition: '0.2s',
               fontWeight: 600, fontSize: '0.9rem',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+              position: 'relative', zIndex: 2
             }}
           >
             <UserCircle2 size={18} /> Student
@@ -103,12 +120,12 @@ const Login = () => {
             onClick={() => { setRole('admin'); setError(''); setFirstTime(false); }}
             style={{ 
               flex: 1, padding: '10px', border: 'none', borderRadius: '8px', 
-              background: role === 'admin' ? 'var(--surface)' : 'transparent',
+              background: 'transparent',
               color: role === 'admin' ? 'var(--primary)' : 'var(--text-muted)',
-              boxShadow: role === 'admin' ? 'var(--shadow-sm)' : 'none',
               cursor: 'pointer', transition: '0.2s',
               fontWeight: 600, fontSize: '0.9rem',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+              position: 'relative', zIndex: 2
             }}
           >
             <Building2 size={18} /> Admin
@@ -197,12 +214,31 @@ const Login = () => {
             <div style={{ position: 'relative' }}>
               <Lock size={18} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
               <input 
-                type="password" 
+                type={showPassword ? "text" : "password"} 
                 required
                 placeholder="••••••••"
-                style={{ paddingLeft: '40px' }}
+                style={{ paddingLeft: '40px', paddingRight: '44px' }}
                 onChange={(e) => setFormData({...formData, password: e.target.value})} 
               />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                style={{
+                  position: 'absolute',
+                  right: '12px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--text-muted)',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  padding: '4px'
+                }}
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
             </div>
           </div>
 
@@ -210,9 +246,11 @@ const Login = () => {
             type="submit" 
             className="btn btn-primary" 
             disabled={loading}
-            style={{ width: '100%', justifyContent: 'center', marginTop: '10px', padding: '12px' }}
+            style={{ width: '100%', justifyContent: 'center', marginTop: '10px', padding: '14px', borderRadius: '12px' }}
           >
-            {loading ? 'Processing...' : (
+            {loading ? (
+              <Loader2 size={20} className="spinner" style={{ animation: 'spin 1s linear infinite' }} />
+            ) : (
               <><LogIn size={20} /> {firstTime ? 'Activate Account' : 'Sign In'}</>
             )}
           </button>
