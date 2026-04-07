@@ -1,14 +1,24 @@
 const errorHandler = (err, req, res, next) => {
-  let statusCode = res.statusCode === 200 ? 500 : res.statusCode;
-  let message = err.message;
+  const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
+  const message = err.message;
+
+  // Log error for internal monitoring
+  console.error(`[Error] ${req.method} ${req.originalUrl}: ${message}`);
+  if (process.env.NODE_ENV !== 'production') {
+    console.error(err.stack);
+  }
 
   // If Mongoose bad ObjectId
   if (err.name === 'CastError' && err.kind === 'ObjectId') {
-    statusCode = 404;
-    message = 'Resource not found';
+    return res.status(404).json({
+      success: false,
+      message: 'Resource not found',
+      stack: process.env.NODE_ENV === 'production' ? null : err.stack,
+    });
   }
 
   res.status(statusCode).json({
+    success: false,
     message,
     stack: process.env.NODE_ENV === 'production' ? null : err.stack,
   });
