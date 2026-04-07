@@ -3,6 +3,7 @@ const dotenv = require('dotenv');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
+const rateLimit = require('express-rate-limit');
 
 const connectDB = require('./config/db');
 
@@ -30,6 +31,18 @@ if (process.env.NODE_ENV === 'development') {
 // Enable CORS
 app.use(cors());
 
+// Rate Limiting
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  message: 'Too many requests from this IP, please try again after 15 minutes',
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Apply rate limiting to all requests or specific ones
+app.use('/api/', limiter);
+
 // Serve uploaded files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
@@ -38,6 +51,7 @@ const authRoutes = require('./routes/auth.js');
 const adminRoutes = require('./routes/admin.js');
 const studentRoutes = require('./routes/student.js');
 const paymentRoutes = require('./routes/payment.js');
+const healthRoute = require('./routes/health.js');
 
 const { notFound, errorHandler } = require('./middleware/errorMiddleware');
 
@@ -46,6 +60,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/student', studentRoutes);
 app.use('/api/payment', paymentRoutes);
+app.use('/api/health', healthRoute);
 
 // Root Route
 app.get('/', (req, res) => {
