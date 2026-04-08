@@ -62,6 +62,10 @@ app.use('/api/student', studentRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/health', healthRoute);
 
+// Error Handling Middleware
+app.use(notFound);
+app.use(errorHandler);
+
 // Root Route
 app.get('/', (req, res) => {
   res.send('College Fee Management API is running...');
