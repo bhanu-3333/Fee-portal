@@ -25,7 +25,7 @@ const AdminDashboard = () => {
   const fetchStats = async () => {
     try {
       const { data } = await api.get('/admin/dashboard');
-      setStats(data);
+      setStats(data.data);
     } catch (err) {
       console.error(err);
     }
@@ -212,7 +212,7 @@ const RecentPayments = () => {
   const fetchPayments = async () => {
     try {
       const { data } = await api.get('/admin/recent-payments');
-      setPayments(data);
+      setPayments(data.data);
     } catch (err) { console.error(err); }
     finally { setLoading(false); }
   };
@@ -315,7 +315,7 @@ const DepartmentManagement = ({ college }) => {
   const fetchDepartments = async () => {
     try {
       const { data } = await api.get('/admin/departments');
-      setDepartments(data);
+      setDepartments(data.data);
     } catch (err) {
       console.error(err);
     }
@@ -324,7 +324,7 @@ const DepartmentManagement = ({ college }) => {
   const fetchYears = async (deptId) => {
     try {
       const { data } = await api.get(`/admin/departments/${deptId}/years`);
-      setYears(data);
+      setYears(data.data);
     } catch (err) {
       console.error(err);
     }
@@ -482,7 +482,7 @@ const YearStudentList = ({ department, year, college, onBack }) => {
   const fetchStudents = async () => {
     try {
       const { data } = await api.get(`/admin/students?departmentId=${department._id}&yearId=${year._id}`);
-      setStudents(data);
+      setStudents(data.data);
     } catch (err) {
       console.error(err);
     }
@@ -826,7 +826,7 @@ const AdminMessages = () => {
   const fetchMessages = async () => {
     try {
       const { data } = await api.get('/admin/messages');
-      setMessages(data);
+      setMessages(data.data);
     } catch (err) { console.error(err); } finally { setLoading(false); }
   };
 
