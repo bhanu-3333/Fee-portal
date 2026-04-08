@@ -10,6 +10,15 @@ const connectDB = require('./config/db');
 // Load env vars
 dotenv.config();
 
+// Validate required environment variables
+const requiredEnv = ['MONGO_URI', 'JWT_SECRET'];
+requiredEnv.forEach((key) => {
+  if (!process.env[key]) {
+    console.error(`Error: Missing required environment variable ${key}`);
+    process.exit(1);
+  }
+});
+
 // Connect to database
 connectDB();
 
