@@ -46,40 +46,65 @@ const AdminDashboard = () => {
 
   return (
     <div className="app-layout">
-      <div className="sidebar">
-        <div style={{ padding: '0 0 20px 0', marginBottom: '30px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-          <h2 style={{ fontSize: '1.4rem', color: 'var(--text)', fontWeight: 800, margin: 0 }}>{stats.college?.name || 'FeeManager'}</h2>
+      <aside className="sidebar" style={{ background: 'var(--surface)', boxShadow: 'var(--shadow-sm)' }}>
+        <div style={{ padding: '24px 0', marginBottom: '40px', textAlign: 'center' }}>
+          <h2 style={{ fontSize: '1.5rem', color: 'var(--primary)', fontWeight: 900, letterSpacing: '-0.03em', margin: 0 }}>
+            {stats.college?.name || 'FeePortal'}
+          </h2>
           {stats.college?.collegeCode && (
-            <span style={{ fontSize: '0.85rem', color: 'var(--primary)', fontWeight: 600 }}>Code: {stats.college.collegeCode}</span>
+            <div style={{ marginTop: '6px' }}>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', background: 'var(--primary-bg)', padding: '2px 8px', borderRadius: '4px' }}>
+                {stats.college.collegeCode}
+              </span>
+            </div>
           )}
         </div>
         
-        {menuItems.map((item) => (
-          <Link 
-            key={item.name}
-            to={item.path} 
-            className={`btn ${location.pathname === item.path ? 'btn-primary' : ''}`}
-            style={{ 
-              justifyContent: 'flex-start', 
-              background: location.pathname === item.path ? 'var(--primary-bg)' : 'transparent',
-              color: location.pathname === item.path ? 'var(--primary)' : 'var(--text-muted)',
-              padding: '12px 16px',
-              border: 'none',
-              boxShadow: 'none'
-            }}
-          >
-            <item.icon size={20} /> {item.name}
-          </Link>
-        ))}
+        <nav style={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: 1 }}>
+          {menuItems.map((item) => {
+            const isActive = location.pathname.includes(item.path);
+            return (
+              <Link 
+                key={item.name}
+                to={item.path} 
+                className={`btn ${isActive ? 'btn-primary' : ''}`}
+                style={{ 
+                  justifyContent: 'flex-start', 
+                  padding: '14px 20px',
+                  borderRadius: '12px',
+                  fontSize: '0.95rem',
+                  fontWeight: 600,
+                  transition: 'var(--transition-fast)',
+                  background: isActive ? 'var(--primary)' : 'transparent',
+                  color: isActive ? '#fff' : 'var(--text-muted)',
+                  border: 'none',
+                  boxShadow: isActive ? '0 4px 12px rgba(5, 150, 105, 0.25)' : 'none'
+                }}
+              >
+                <item.icon size={20} style={{ opacity: isActive ? 1 : 0.7 }} /> 
+                <span>{item.name}</span>
+              </Link>
+            );
+          })}
+        </nav>
 
         <button 
           onClick={handleLogout} 
           className="btn" 
-          style={{ marginTop: 'auto', justifyContent: 'flex-start', color: 'var(--error)', background: 'transparent', border: 'none', boxShadow: 'none' }}
+          style={{ 
+            marginTop: 'auto', 
+            justifyContent: 'flex-start', 
+            color: 'var(--error)', 
+            background: 'rgba(239, 68, 68, 0.05)', 
+            border: 'none', 
+            borderRadius: '12px',
+            padding: '14px 20px',
+            fontWeight: 600
+          }}
         >
           <LogOut size={20} /> Logout
         </button>
-      </div>
+      </aside>
 
       <div className="main-wrapper">
         <div className="top-navbar">
