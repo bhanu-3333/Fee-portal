@@ -2,6 +2,7 @@ import React, { useState } from 'react'; // verified
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
 import { LogIn, GraduationCap, Building2, Lock, Mail, Hash, UserCircle2, Eye, EyeOff, Loader2 } from 'lucide-react';
+import LoadingSpinner from '../components/common/LoadingSpinner';
 
 const Login = () => {
   const [role, setRole] = useState('student');
@@ -42,75 +43,60 @@ const Login = () => {
   };
 
   return (
-    <div className="fade-in" style={{ 
+    <div className="app-container" style={{ 
       display: 'flex', 
       alignItems: 'center', 
       justifyContent: 'center', 
-      minHeight: '100vh',
-      background: 'var(--background)',
-      padding: '20px'
+      background: 'radial-gradient(circle at top right, var(--primary-bg), transparent), radial-gradient(circle at bottom left, var(--primary-bg), transparent), var(--background)',
+      padding: '24px'
     }}>
-      <div className="card slide-up" style={{ width: '100%', maxWidth: '440px', padding: '48px', boxShadow: 'var(--shadow-lg)', border: '1px solid var(--border)' }}>
+      <div className="glass-card fade-in" style={{ width: '100%', maxWidth: '460px', padding: '48px' }}>
         
         {/* Logo/Icon Area */}
-        <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+        <div style={{ textAlign: 'center', marginBottom: '40px' }} className="slide-up">
           <div style={{ 
-            width: '64px', 
-            height: '64px', 
-            borderRadius: '16px', 
+            width: '72px', 
+            height: '72px', 
+            borderRadius: '18px', 
             background: 'var(--primary-bg)', 
             display: 'flex', 
             alignItems: 'center', 
             justifyContent: 'center',
-            margin: '0 auto 16px',
+            margin: '0 auto 20px',
             color: 'var(--primary)',
-            animation: 'float 3s ease-in-out infinite'
+            boxShadow: '0 8px 16px -4px rgba(5, 150, 105, 0.2)',
+            animation: 'float 4s ease-in-out infinite'
           }}>
-            <GraduationCap size={32} />
+            <GraduationCap size={36} />
           </div>
-          <h2 style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--text)', marginBottom: '8px' }}>
-            {role === 'admin' ? 'Admin Portal' : 'Student Portal'}
+          <h2 style={{ fontSize: '2rem', fontWeight: 800, color: 'var(--text)', marginBottom: '8px', letterSpacing: '-0.02em' }}>
+            {role === 'admin' ? 'Admin Gateway' : 'Student Hub'}
           </h2>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>
-            Welcome back! Please enter your details.
+          <p style={{ color: 'var(--text-muted)', fontSize: '1rem', fontWeight: 500 }}>
+            Secure portal for college fee ecosystem
           </p>
         </div>
 
         {/* Role Selector Tabs */}
         <div style={{ 
           display: 'flex', 
-          background: 'var(--background)', 
-          borderRadius: '12px', 
+          background: 'rgba(0, 0, 0, 0.03)', 
+          borderRadius: '14px', 
           padding: '4px', 
-          marginBottom: '28px',
-          border: '1px solid var(--border)',
-          position: 'relative'
+          marginBottom: '32px',
+          border: '1px solid var(--border)'
         }}>
-          {/* Active Tab Indicator */}
-          <div style={{
-            position: 'absolute',
-            top: '4px',
-            bottom: '4px',
-            left: role === 'student' ? '4px' : 'calc(50% + 2px)',
-            width: 'calc(50% - 6px)',
-            background: 'var(--surface)',
-            borderRadius: '8px',
-            boxShadow: 'var(--shadow-sm)',
-            transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-            zIndex: 1
-          }} />
-          
           <button 
             type="button"
             onClick={() => { setRole('student'); setError(''); setFirstTime(false); }}
             style={{ 
-              flex: 1, padding: '10px', border: 'none', borderRadius: '8px', 
-              background: 'transparent',
+              flex: 1, padding: '12px', border: 'none', borderRadius: '10px', 
+              background: role === 'student' ? 'var(--surface)' : 'transparent',
               color: role === 'student' ? 'var(--primary)' : 'var(--text-muted)',
-              cursor: 'pointer', transition: '0.2s',
-              fontWeight: 600, fontSize: '0.9rem',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-              position: 'relative', zIndex: 2
+              boxShadow: role === 'student' ? 'var(--shadow-sm)' : 'none',
+              cursor: 'pointer', transition: 'var(--transition-fast)',
+              fontWeight: 600, fontSize: '0.95rem',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
             }}
           >
             <UserCircle2 size={18} /> Student
@@ -119,13 +105,13 @@ const Login = () => {
             type="button"
             onClick={() => { setRole('admin'); setError(''); setFirstTime(false); }}
             style={{ 
-              flex: 1, padding: '10px', border: 'none', borderRadius: '8px', 
-              background: 'transparent',
+              flex: 1, padding: '12px', border: 'none', borderRadius: '10px', 
+              background: role === 'admin' ? 'var(--surface)' : 'transparent',
               color: role === 'admin' ? 'var(--primary)' : 'var(--text-muted)',
-              cursor: 'pointer', transition: '0.2s',
-              fontWeight: 600, fontSize: '0.9rem',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
-              position: 'relative', zIndex: 2
+              boxShadow: role === 'admin' ? 'var(--shadow-sm)' : 'none',
+              cursor: 'pointer', transition: 'var(--transition-fast)',
+              fontWeight: 600, fontSize: '0.95rem',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
             }}
           >
             <Building2 size={18} /> Admin
