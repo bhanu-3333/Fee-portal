@@ -18,20 +18,17 @@ api.interceptors.request.use((config) => {
 
 api.interceptors.response.use(
   (response) => {
-    if (import.meta.env.DEV) {
-      console.log(`✅ [API Success] ${response.status} ${response.config.url}`);
-    }
     return response;
   },
   (error) => {
-    const originalRequest = error.config;
-    if (import.meta.env.DEV) {
-      console.error(`❌ [API Error] ${error.response?.status} ${originalRequest.url}`, error.response?.data || error.message);
-    }
+    // Global handling for 401 Unauthorized errors (e.g., token expired)
     if (error.response && error.response.status === 401) {
+      console.warn('Session expired. Redirecting to login...');
       localStorage.removeItem('user');
       window.location.href = '/login';
     }
+    
+    // Pass errors through for component-level specific handling
     return Promise.reject(error);
   }
 );
