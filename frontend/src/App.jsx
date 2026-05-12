@@ -1,3 +1,8 @@
+/**
+ * App.jsx — Root router component.
+ * Reads the current user role from localStorage and redirects
+ * to the appropriate dashboard or the login page.
+ */
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
