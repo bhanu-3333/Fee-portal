@@ -1,3 +1,7 @@
+/**
+ * Login.jsx — Handles both admin and student login flows.
+ * Supports first-time student password setup on initial login.
+ */
 import React, { useState } from 'react'; // verified
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
