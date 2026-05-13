@@ -659,7 +659,7 @@ const YearStudentList = ({ department, year, college, onBack }) => {
             </div>
             
             <button type="submit" className="btn btn-primary" disabled={uploading}>
-              {uploading ? 'Processing file...' : 'Upload Data'}
+              {uploading ? 'Processing file...' : 'Upload Data Data'}
             </button>
           </form>
 
