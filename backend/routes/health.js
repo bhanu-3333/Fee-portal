@@ -2,10 +2,7 @@ const express = require('express');
 const router = express.Router();
 
 /**
- * Health check endpoint.
- * Returns server uptime, current timestamp, and environment.
- * Useful for load balancer probes and monitoring tools.
- *
+ * @desc    API Health Check
  * @route   GET /api/health
  * @access  Public
  */
